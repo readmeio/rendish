@@ -4,9 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { RequestError } from "./graphql.js";
-import { projects } from "./subcommands/projects.js";
-import { services } from "./subcommands/services.js";
-import { auth, login } from "./subcommands/auth.js";
+import { projects, services, auth, login } from "./subcommands/index.js";
 import { die } from "./ui.js";
 
 import esMain from "es-main";
