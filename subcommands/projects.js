@@ -26,9 +26,9 @@ listEnvs <project> list environments within a project
 
 async function listProjects(idToken, user) {
   // for now, just assume that we want the first team. revisit
-  const { id: teamID } = (await fetchTeams(idToken, user))[0];
+  const { id: teamId } = (await fetchTeams(idToken, user))[0];
 
-  const projects = await fetchProjects(idToken, teamID);
+  const projects = await fetchProjects(idToken, teamId);
 
   nbTable(
     [["name", "id", "# of environments"]].concat(
@@ -37,37 +37,37 @@ async function listProjects(idToken, user) {
   );
 }
 
-async function findProjectIDByName(idToken, user, name) {
+async function findProjectIdByName(idToken, user, name) {
   // for now, just assume that we want the first team. revisit
-  const { id: teamID } = (await fetchTeams(idToken, user))[0];
+  const { id: teamId } = (await fetchTeams(idToken, user))[0];
 
-  const projects = await fetchProjects(idToken, teamID);
+  const projects = await fetchProjects(idToken, teamId);
 
   return projects.find((p) => p.name == name)?.id;
 }
 
 async function listProjectEnvs(idToken, user, args) {
-  let projectID = args[0];
+  let projectId = args[0];
 
-  if (!projectID) {
+  if (!projectId) {
     die(
-      `You must provide a project ID or name as the first argument to listEnvs`
+      `You must provide a project Id or name as the first argument to listEnvs`
     );
   }
 
-  if (!projectID.startsWith("prj-")) {
+  if (!projectId.startsWith("prj-")) {
     //assume that if the argument doesn't start with prj-, it represents a
     //project name not a project id
-    projectID = await findProjectIDByName(idToken, user, projectID);
+    projectId = await findProjectIdByName(idToken, user, projectId);
   }
 
-  if (!projectID) {
-    die(`Unable to find project from ID or name ${args[0]}`);
+  if (!projectId) {
+    die(`Unable to find project from Id or name ${args[0]}`);
   }
 
-  const projectResources = await fetchProjectResources(idToken, projectID);
+  const projectResources = await fetchProjectResources(idToken, projectId);
   if (!projectResources) {
-    die(`Unexpected error getting resources for projectID ${projectID}`);
+    die(`Unexpected error getting resources for projectId ${projectId}`);
   }
 
   nbTable(
