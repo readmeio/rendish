@@ -4,7 +4,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { RequestError } from "./graphql.js";
-import { projects, services, auth, login } from "./subcommands/index.js";
+import {
+  auth,
+  envGroups,
+  login,
+  projects,
+  services,
+} from "./subcommands/index.js";
 import { die } from "./ui.js";
 
 import esMain from "es-main";
@@ -92,6 +98,7 @@ async function main() {
     auth: auth,
     projects: projects,
     services: services,
+    envGroups: envGroups,
   };
 
   try {
