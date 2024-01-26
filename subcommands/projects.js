@@ -11,7 +11,7 @@ import minimist from "minimist";
 function usage() {
   console.log(`Usage: rb [<options>] [<command>] [args]
 
-${color.yellow("services")} subcommand
+${color.yellow("projects")} subcommand
 
 OPTIONS
 
@@ -23,7 +23,8 @@ For help with any subcommand, use ${color.yellow(
     "`rb <command> <subcommand> --help`"
   )}
 
-list               list available services
+list               list available projects
+listEnvs <project> list environments within a project
 `);
 }
 
@@ -68,7 +69,6 @@ async function listProjectEnvs(idToken, user, args) {
     die(`Unable to find project from ID or name ${args[0]}`);
   }
 
-  console.error("projectID", projectID);
   const projectResources = await fetchProjectResources(idToken, projectID);
   if (!projectResources) {
     die(`Unexpected error getting resources for projectID ${projectID}`);
@@ -82,6 +82,7 @@ async function listProjectEnvs(idToken, user, args) {
         e.name,
         e.id,
         e.services.length,
+        e.databases.length,
         e.redises.length,
         e.envGroups.length,
       ])
