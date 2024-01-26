@@ -23,26 +23,22 @@ list    list available projects
 `);
 }
 
-async function listProjects(idToken, user) {
+async function listServices(idToken, user) {
   // for now, just assume that we want the first team. revisit
   const { id: teamID } = (await fetchTeams(idToken, user))[0];
 
   const services = await fetchServices(idToken, teamID);
 
   nbTable(
-    [
-      ["name", "id", "state", "type", "service type", "deploy type", "slug"],
-    ].concat(
-      services
-        .map((s) => Object.values(s)[0])
-        .map((s) => [
-          s.name,
-          s.id,
-          s.state,
-          s.userFacingTypeSlug,
-          s.env.name,
-          s.slug,
-        ])
+    [["name", "id", "state", "type", "deploy type", "slug"]].concat(
+      services.map((s) => [
+        s.name,
+        s.id,
+        s.state,
+        s.userFacingTypeSlug,
+        s.env?.name,
+        s.slug,
+      ])
     )
   );
 }
@@ -57,7 +53,7 @@ export async function services(idToken, user, args) {
   const subcommand = argv._[0];
 
   const subcommands = {
-    list: listProjects,
+    list: listServices,
   };
 
   if (subcommand in subcommands) {
