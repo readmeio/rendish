@@ -105,7 +105,7 @@ async function main() {
 
   try {
     if (command in commands) {
-      commands[command](idToken, user, argv._.slice(1));
+      await commands[command](idToken, user, argv._.slice(1));
     } else {
       die(`Unable to find command ${command}`);
     }
