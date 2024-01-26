@@ -3,9 +3,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { login, RequestError } from "./graphql.js";
+import { RequestError } from "./graphql.js";
 import { projects } from "./subcommands/projects.js";
 import { services } from "./subcommands/services.js";
+import { auth, login } from "./subcommands/auth.js";
 import { die } from "./ui.js";
 
 import esMain from "es-main";
@@ -24,15 +25,21 @@ COMMANDS
 
 For help with any command, use \`rb <command> --help\`
 
-projects    list available projects
+auth        auth to render
+projects    render projects
+services    render services
 `);
 }
 
-const configDir = path.join(process.env.HOME, ".config", "render-bootleg");
+export const ConfigDir = path.join(
+  process.env.HOME,
+  ".config",
+  "render-bootleg"
+);
 
 function initConfig() {
-  if (!fs.existsSync(configDir)) {
-    fs.mkdir(configDir, {
+  if (!fs.existsSync(ConfigDir)) {
+    fs.mkdir(ConfigDir, {
       recursive: true,
     });
   }
@@ -40,7 +47,7 @@ function initConfig() {
 
 // tokenExists returns true if a token file exists, false otherwise
 function validTokenExists() {
-  if (!fs.existsSync(path.join(configDir, "token.json"))) {
+  if (!fs.existsSync(path.join(ConfigDir, "token.json"))) {
     return false;
   }
   const { expiresAt } = loadToken();
@@ -55,18 +62,7 @@ function validTokenExists() {
  * @returns {Promise<import('./graphql.js').Login>}
  */
 function loadToken() {
-  return JSON.parse(fs.readFileSync(path.join(configDir, "token.json")));
-}
-
-function saveToken(idToken, expiresAt, user) {
-  fs.writeFileSync(
-    path.join(configDir, "token.json"),
-    JSON.stringify({
-      idToken,
-      expiresAt,
-      user,
-    })
-  );
+  return JSON.parse(fs.readFileSync(path.join(ConfigDir, "token.json")));
 }
 
 // ideas list:
@@ -74,13 +70,9 @@ function saveToken(idToken, expiresAt, user) {
 // - convert to typescript or at least add type annotations
 // - allow commands and subcommands to throw, and handle it nicely with an
 //   error printed to the console
+// - handle logout
+// - handle token expiry
 async function main() {
-  // Check for presence of required environment variables
-  ["RENDER_USER", "RENDER_PASS", "RENDER_TOTP"].forEach((envVar) => {
-    if (!process.env[envVar])
-      throw new Error(`${envVar} environment variable must be set`);
-  });
-
   // parse the command line arguments with minimist:
   // https://github.com/minimistjs/minimist#example
   const argv = minimist(process.argv.slice(2), { stopEarly: true });
@@ -92,19 +84,14 @@ async function main() {
 
   initConfig();
 
-  let { idToken, expiresAt, user } = validTokenExists()
+  let { idToken, user } = validTokenExists()
     ? await loadToken()
-    : await login(
-        process.env["RENDER_USER"],
-        process.env["RENDER_PASS"],
-        process.env["RENDER_TOTP"]
-      );
-
-  saveToken(idToken, expiresAt, user);
+    : await login();
 
   const command = argv._[0];
 
   const commands = {
+    auth: auth,
     projects: projects,
     services: services,
   };
