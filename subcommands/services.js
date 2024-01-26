@@ -1,4 +1,4 @@
-import { fetchTeams, fetchProjects } from "../graphql.js";
+import { fetchTeams, fetchServices } from "../graphql.js";
 import { nbTable } from "../ui.js";
 
 import color from "colors-cli/safe";
@@ -27,19 +27,30 @@ async function listProjects(idToken, user) {
   // for now, just assume that we want the first team. revisit
   const { id: teamID } = (await fetchTeams(idToken, user))[0];
 
-  const projects = await fetchProjects(idToken, teamID);
+  const services = await fetchServices(idToken, teamID);
 
   nbTable(
-    [["name", "id", "# of environments"]].concat(
-      projects.map((p) => [p.name, p.id, p.environments.length])
+    [
+      ["name", "id", "state", "type", "service type", "deploy type", "slug"],
+    ].concat(
+      services
+        .map((s) => Object.values(s)[0])
+        .map((s) => [
+          s.name,
+          s.id,
+          s.state,
+          s.userFacingTypeSlug,
+          s.env.name,
+          s.slug,
+        ])
     )
   );
 }
 
-export async function projects(idToken, user, args) {
+export async function services(idToken, user, args) {
   const argv = minimist(args);
 
-  if (argv.help) {
+  if (argv.help || !argv._.length) {
     return usage();
   }
 

@@ -11,7 +11,7 @@ import minimist from "minimist";
 function usage() {
   console.log(`Usage: rb [<options>] [<command>] [args]
 
-${color.yellow("projects")} subcommand
+${color.yellow("services")} subcommand
 
 OPTIONS
 
@@ -23,8 +23,7 @@ For help with any subcommand, use ${color.yellow(
     "`rb <command> <subcommand> --help`"
   )}
 
-list               list available projects
-listEnvs <project> list environments within a project
+list               list available services
 `);
 }
 
