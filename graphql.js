@@ -2,11 +2,16 @@ import { inspect } from "node:util";
 
 import totp from "totp-generator";
 
-const GRAPHQL_URI = "https://api.render.com/graphql";
+// for debugging purposes, this can be useful, as it will return information
+// about the request that was made:
 // const GRAPHQL_URI = "https://httpbingo.org/anything";
+const GRAPHQL_URI = "https://api.render.com/graphql";
 
-export function RequestError() {}
-RequestError.prototype = new Error();
+export class RequestError extends Error {
+  constructor(message) {
+    super(message);
+  }
+}
 
 async function req(token, body) {
   const headers = { "Content-Type": "application/json" };
@@ -29,7 +34,6 @@ async function req(token, body) {
   }
   const resBody = await res.json();
   if (resBody.errors) {
-    console.log("Request failure", resBody.errors, res);
     throw new RequestError(
       `Request failure: ${JSON.stringify(resBody.errors)}`
     );
