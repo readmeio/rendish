@@ -1,7 +1,5 @@
 import { inspect } from "node:util";
 
-import totp from "totp-generator";
-
 // for debugging purposes, this can be useful, as it will return information
 // about the request that was made:
 // const GRAPHQL_URI = "https://httpbingo.org/anything";
@@ -68,15 +66,12 @@ async function req(token, body) {
  */
 
 /**
- * Log a given user in with their password and TOTP secret
+ * Sign a user in - does not handle TOTP
  *
- * @param {string} user - the username to log in
- * @param {string} pass - their password
- * @param {string} totpSecret - their TOTP secret
  * @returns {Promise<Login>} the user object, their id token, and an expiry
  */
-export async function login(user, pass, totpSecret) {
-  const loginRes = await req(
+export async function signIn(user, pass) {
+  const body = await req(
     undefined,
     JSON.stringify({
       operationName: "signIn",
@@ -88,14 +83,24 @@ export async function login(user, pass, totpSecret) {
         "mutation signIn($email: String!, $password: String!) {\n  signIn(email: $email, password: $password) {\n    ...authResultFields\n    __typename\n  }\n}\n\nfragment authResultFields on AuthResult {\n  idToken\n  expiresAt\n  user {\n    ...userFields\n    sudoModeExpiresAt\n    __typename\n  }\n  readOnly\n  __typename\n}\n\nfragment userFields on User {\n  id\n  active\n  createdAt\n  email\n  featureFlags\n  githubId\n  gitlabId\n  googleId\n  name\n  notifyOnPrUpdate\n  otpEnabled\n  passwordExists\n  tosAcceptedAt\n  intercomEmailHMAC\n  __typename\n}\n",
     })
   );
-  console.log(loginRes);
 
+  return body.data.signIn;
+}
+
+/**
+ * Sign a user in with TOTP
+ *
+ * @param {string} token - the token from signIn
+ * @param {string} totpcode - the user's TOTP code
+ * @returns {Promise<Login>} the user object, their id token, and an expiry
+ */
+export async function signInTOTP(token, totpcode) {
   const totpRes = await req(
-    loginRes.data.signIn.idToken,
+    token,
     JSON.stringify({
       operationName: "verifyOneTimePassword",
       variables: {
-        code: totp(totpSecret),
+        code: totpcode,
       },
       query:
         "mutation verifyOneTimePassword($code: String!) {\n  verifyOneTimePassword(code: $code) {\n    ...authResultFields\n    __typename\n  }\n}\n\nfragment authResultFields on AuthResult {\n  idToken\n  expiresAt\n  user {\n    ...userFields\n    sudoModeExpiresAt\n    __typename\n  }\n  readOnly\n  __typename\n}\n\nfragment userFields on User {\n  id\n  active\n  createdAt\n  email\n  featureFlags\n  githubId\n  gitlabId\n  googleId\n  name\n  notifyOnPrUpdate\n  otpEnabled\n  passwordExists\n  tosAcceptedAt\n  intercomEmailHMAC\n  __typename\n}\n",
