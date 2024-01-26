@@ -300,3 +300,41 @@ export async function fetchServices(token, teamId) {
   });
   return body.data.servicesForOwner;
 }
+
+/**
+ * @typedef {Object} EnvVar
+ * @property {string} id
+ * @property {boolean} isFile
+ * @property {string} key
+ * @property {string} value
+ * @property {string} __typename
+ */
+
+/**
+ * @typedef {Object} EnvGroup
+ * @property {string} id
+ * @property {string} name
+ * @property {string} ownerId
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {string} environment
+ * @property {EnvVar[]} envVars
+ * @property {string} __typename
+ */
+
+/**
+ * Fetch all environment groups for a given team id
+ *
+ * @param {string} token
+ * @param {string} teamId
+ * @returns {Promise<EnvGroup[]>} An array of Team objects for the given user
+ */
+export async function fetchEnvGroups(token, teamId) {
+  const body = await req(token, {
+    operationName: "envGroupsForOwner",
+    variables: { ownerId: teamId },
+    query:
+      "query envGroupsForOwner($ownerId: String!) {\n  envGroupsForOwner(ownerId: $ownerId) {\n    ...envGroupFields\n    __typename\n  }\n}\n\nfragment envGroupFields on EnvGroup {\n  id\n  name\n  ownerId\n  createdAt\n  updatedAt\n  envVars {\n    ...envVarFields\n    __typename\n  }\n  environment {\n    ...environmentFields\n    __typename\n  }\n  __typename\n}\n\nfragment envVarFields on EnvVar {\n  id\n  isFile\n  key\n  value\n  __typename\n}\n\nfragment environmentFields on Environment {\n  id\n  name\n  project {\n    id\n    name\n    owner {\n      id\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n",
+  });
+  return body.data.envGroupsForOwner;
+}
