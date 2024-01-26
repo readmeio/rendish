@@ -301,7 +301,7 @@ export async function fetchProjectResources(token, projectId) {
  *
  * @param {string} token
  * @param {string} teamId
- * @returns {Promise<Record<number, Server>[]>} An array of Team objects for the given user
+ * @returns {Promise<Server[]>} An array of Team objects for the given user
  */
 export async function fetchServices(token, teamId) {
   const body = await req(
