@@ -23,6 +23,7 @@ OPTIONS
 SUBCOMMANDS
 
 login    login and create saved config
+show     show saved login information
 `);
 }
 
@@ -51,6 +52,10 @@ export async function login() {
   return { idToken, expiresAt, user };
 }
 
+async function show() {
+  console.log(String(fs.readFileSync(path.join(ConfigDir, "token.json"))));
+}
+
 export async function auth(_, __, args) {
   const argv = minimist(args);
 
@@ -62,6 +67,7 @@ export async function auth(_, __, args) {
 
   const subcommands = {
     login: login,
+    show: show,
   };
 
   if (subcommand in subcommands) {
