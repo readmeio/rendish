@@ -1,5 +1,8 @@
 import { inspect } from "node:util";
 
+// XXX: should it be this module's job to convert timestamps from strings to
+// Dates? Currently it does not, and leaves that to the caller.
+
 // for debugging purposes, this can be useful, as it will return information
 // about the request that was made:
 // const GRAPHQL_URI = "https://httpbingo.org/anything";
@@ -372,4 +375,67 @@ export async function fetchEnvGroupServices(token, envGroupId) {
   });
 
   return body.data.servicesForEnvGroup;
+}
+
+/**
+ * @typedef {Object} LogLabel
+ * @property {string} label
+ * @property {string} value
+ * @property {string} __typename
+ */
+
+/**
+ * @typedef {Object} LogWithLabels
+ * @property {string} id
+ * @property {string} timestamp
+ * @property {string} text
+ * @property {string} __typename
+ */
+
+/**
+ * @typedef {Object} LogResult
+ * @property {LogWithLabels[]} logs
+ * @property {string} nextEndTime
+ * @property {string} nextStartTime
+ * @property {boolean} hasMore
+ * @property {string} __typename
+ */
+
+/**
+ * Fetch logs for a given service in a given team
+ *
+ * TODO: make region, time range, pageSize, etc into params
+ *
+ * @param {string} token
+ * @param {string} teamId
+ * @param {string} serviceId
+ * @returns {Promise<LogResult>} An array of services attached to the given environment group
+ */
+export async function fetchLogs(token, teamId, serviceId) {
+  const now = new Date();
+  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+  const body = await req(token, {
+    operationName: "logs",
+    variables: {
+      query: {
+        start: fourHoursAgo.toISOString(),
+        end: now.toISOString(),
+        filters: [
+          {
+            field: "SERVICE",
+            values: [serviceId],
+            operator: "INCLUDES",
+          },
+        ],
+        ownerId: teamId,
+        pageSize: 50,
+        region: "oregon",
+        direction: "BACKWARD",
+      },
+    },
+    query:
+      "query logs($query: LogQueryInput!) {\n  logs(query: $query) {\n    logs {\n      ...logWithLabelsFields\n      __typename\n    }\n    nextEndTime\n    nextStartTime\n    hasMore\n    __typename\n  }\n}\n\nfragment logWithLabelsFields on LogWithLabels {\n  id\n  labels {\n    label\n    value\n    __typename\n  }\n  timestamp\n  text\n  __typename\n}\n",
+  });
+
+  return body.data.logs;
 }

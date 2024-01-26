@@ -12,7 +12,7 @@ import minimist from "minimist";
 function usage() {
   console.log(`Usage: rb [<options>] envGroups <subcommand> [args]
 
-${color.yellow("projects")} subcommand
+${color.yellow("envGroups")} subcommand
 
 OPTIONS
 
@@ -75,7 +75,7 @@ async function findEnvGroupByName(token, user, name) {
 async function resolveEnvGroup(token, user, envGroupIdOrName) {
   if (!envGroupIdOrName) {
     die(
-      `You must provide a project Id or name as the first argument to listEnvs`
+      `You must provide a project id or name as the first argument to listEnvs`
     );
   }
 

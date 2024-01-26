@@ -8,6 +8,7 @@ import {
   auth,
   envGroups,
   login,
+  logs,
   projects,
   services,
 } from "./subcommands/index.js";
@@ -99,6 +100,7 @@ async function main() {
     projects: projects,
     services: services,
     envGroups: envGroups,
+    logs: logs,
   };
 
   try {
