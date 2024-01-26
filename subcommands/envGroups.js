@@ -1,4 +1,9 @@
-import { fetchEnvGroup, fetchEnvGroups, fetchTeams } from "../graphql.js";
+import {
+  fetchEnvGroup,
+  fetchEnvGroups,
+  fetchEnvGroupServices,
+  fetchTeams,
+} from "../graphql.js";
 import { die, nbTable } from "../ui.js";
 
 import color from "colors-cli/safe";
@@ -17,6 +22,7 @@ SUBCOMMANDS
 
 list                list available projects
 listVars <envGroup> list variables in an environment group by group id or name
+services <envGroup> list services attached to the given env group
 `);
 }
 
@@ -59,23 +65,33 @@ async function findEnvGroupByName(token, user, name) {
   return envGroups.find((e) => e.name == name)?.id;
 }
 
-async function listEnvGroup(token, user, args) {
-  let envGroupId = args[0];
-
-  if (!envGroupId) {
+/**
+ * Given a string that may represent an envGroup Id or name, resolve it to an envGroup id
+ * @params {string} token
+ * @params {User} user
+ * @params {string} envGroupIdOrName
+ * @returns {Promise<string>} envGroupId
+ */
+async function resolveEnvGroup(token, user, envGroupIdOrName) {
+  if (!envGroupIdOrName) {
     die(
       `You must provide a project Id or name as the first argument to listEnvs`
     );
   }
 
-  if (!envGroupId.startsWith("evg-")) {
-    envGroupId = await findEnvGroupByName(token, user, envGroupId);
-  }
+  const envGroupId = envGroupIdOrName.startsWith("evg-")
+    ? envGroupIdOrName
+    : await findEnvGroupByName(token, user, envGroupIdOrName);
 
   if (!envGroupId) {
     die(`Unable to find env group from id or name ${envGroupId}`);
   }
 
+  return envGroupId;
+}
+
+async function listEnvGroup(token, user, args) {
+  const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const envGroup = await fetchEnvGroup(token, envGroupId);
 
   nbTable(
@@ -83,6 +99,13 @@ async function listEnvGroup(token, user, args) {
       envGroup.envVars.map((e) => [e.id, e.key, e.value])
     )
   );
+}
+
+async function listServicesForEnvGroup(token, user, args) {
+  const envGroupId = await resolveEnvGroup(token, user, args[0]);
+  const services = await fetchEnvGroupServices(token, envGroupId);
+
+  nbTable([["name", "id"]].concat(services.map((s) => [s.name, s.id])));
 }
 
 export async function envGroups(idToken, user, args) {
@@ -97,6 +120,7 @@ export async function envGroups(idToken, user, args) {
   const subcommands = {
     list: listEnvGroups,
     listVars: listEnvGroup,
+    services: listServicesForEnvGroup,
   };
 
   if (subcommand in subcommands) {
