@@ -338,3 +338,20 @@ export async function fetchEnvGroups(token, teamId) {
   });
   return body.data.envGroupsForOwner;
 }
+
+/**
+ * Fetch an environment group by ID
+ *
+ * @param {string} token
+ * @param {string} envGroupId
+ * @returns {Promise<EnvGroup>} An array of Team objects for the given user
+ */
+export async function fetchEnvGroup(token, envGroupId) {
+  const body = await req(token, {
+    operationName: "envGroup",
+    variables: { id: envGroupId },
+    query:
+      "query envGroup($id: String!) {\n  envGroup(id: $id) {\n    ...envGroupFields\n    __typename\n  }\n}\n\nfragment envGroupFields on EnvGroup {\n  id\n  name\n  ownerId\n  createdAt\n  updatedAt\n  envVars {\n    ...envVarFields\n    __typename\n  }\n  environment {\n    ...environmentFields\n    __typename\n  }\n  __typename\n}\n\nfragment envVarFields on EnvVar {\n  id\n  isFile\n  key\n  value\n  __typename\n}\n\nfragment environmentFields on Environment {\n  id\n  name\n  project {\n    id\n    name\n    owner {\n      id\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n",
+  });
+  return body.data.envGroup;
+}

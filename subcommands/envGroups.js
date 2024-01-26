@@ -1,4 +1,4 @@
-import { fetchEnvGroups, fetchTeams } from "../graphql.js";
+import { fetchEnvGroup, fetchEnvGroups, fetchTeams } from "../graphql.js";
 import { die, nbTable } from "../ui.js";
 
 import color from "colors-cli/safe";
@@ -16,7 +16,7 @@ OPTIONS
 SUBCOMMANDS
 
 list                list available projects
-listVars <envGroup> list variables in an environment group
+listVars <envGroup> list variables in an environment group by group id or name
 `);
 }
 
@@ -51,6 +51,40 @@ async function listEnvGroups(token, user) {
   );
 }
 
+async function findEnvGroupByName(token, user, name) {
+  const { id: teamId } = (await fetchTeams(token, user))[0];
+
+  const envGroups = await fetchEnvGroups(token, teamId);
+
+  return envGroups.find((e) => e.name == name)?.id;
+}
+
+async function listEnvGroup(token, user, args) {
+  let envGroupId = args[0];
+
+  if (!envGroupId) {
+    die(
+      `You must provide a project Id or name as the first argument to listEnvs`
+    );
+  }
+
+  if (!envGroupId.startsWith("evg-")) {
+    envGroupId = await findEnvGroupByName(token, user, envGroupId);
+  }
+
+  if (!envGroupId) {
+    die(`Unable to find env group from id or name ${envGroupId}`);
+  }
+
+  const envGroup = await fetchEnvGroup(token, envGroupId);
+
+  nbTable(
+    [["id", "key", "value"]].concat(
+      envGroup.envVars.map((e) => [e.id, e.key, e.value])
+    )
+  );
+}
+
 export async function envGroups(idToken, user, args) {
   const argv = minimist(args);
 
@@ -62,6 +96,7 @@ export async function envGroups(idToken, user, args) {
 
   const subcommands = {
     list: listEnvGroups,
+    listVars: listEnvGroup,
   };
 
   if (subcommand in subcommands) {
