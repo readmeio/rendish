@@ -355,3 +355,21 @@ export async function fetchEnvGroup(token, envGroupId) {
   });
   return body.data.envGroup;
 }
+
+/**
+ * Fetch the services that are attached to a given environment group
+ *
+ * @param {string} token
+ * @param {string} envGroupId
+ * @returns {Promise<Server[]>} An array of services attached to the given environment group
+ */
+export async function fetchEnvGroupServices(token, envGroupId) {
+  const body = await req(token, {
+    operationName: "servicesForEnvGroup",
+    variables: { envGroupId: envGroupId },
+    query:
+      "query servicesForEnvGroup($envGroupId: String!) {\n  servicesForEnvGroup(envGroupId: $envGroupId) {\n    id\n    type\n    userFacingType\n    userFacingTypeSlug\n    name\n    slug\n    sourceBranch\n    env {\n      ...envFields\n      __typename\n    }\n    repo {\n      ...repoFields\n      __typename\n    }\n    updatedAt\n    user {\n      id\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment envFields on Env {\n  id\n  name\n  language\n  isStatic\n  sampleBuildCommand\n  sampleStartCommand\n  __typename\n}\n\nfragment repoFields on Repo {\n  id\n  provider\n  providerId\n  name\n  ownerName\n  webURL\n  isPrivate\n  __typename\n}\n",
+  });
+
+  return body.data.servicesForEnvGroup;
+}
