@@ -5,7 +5,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] [<command>] [args]
+  console.log(`Usage: rb [<options>] services <subcommand> [args]
 
 ${color.yellow("services")} subcommand
 
@@ -15,11 +15,7 @@ OPTIONS
 
 SUBCOMMANDS
 
-For help with any subcommand, use ${color.yellow(
-    "`rb <command> <subcommand> --help`"
-  )}
-
-list    list available projects
+list    list all services
 `);
 }
 

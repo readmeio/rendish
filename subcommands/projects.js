@@ -9,7 +9,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] [<command>] [args]
+  console.log(`Usage: rb [<options>] project <subcommand> [args]
 
 ${color.yellow("projects")} subcommand
 
@@ -18,10 +18,6 @@ OPTIONS
 --help:     display this text
 
 SUBCOMMANDS
-
-For help with any subcommand, use ${color.yellow(
-    "`rb <command> <subcommand> --help`"
-  )}
 
 list               list available projects
 listEnvs <project> list environments within a project
