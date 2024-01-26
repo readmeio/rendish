@@ -15,7 +15,9 @@ OPTIONS
 
 SUBCOMMANDS
 
-For help with any subcommand, use ${color.yellow('`rb <command> <subcommand> --help`')}
+For help with any subcommand, use ${color.yellow(
+    "`rb <command> <subcommand> --help`"
+  )}
 
 list    list available projects
 `);
@@ -45,10 +47,10 @@ export async function projects(idToken, user, args) {
 
   const subcommands = {
     list: listProjects,
-  }
-  
+  };
+
   if (subcommand in subcommands) {
-    subcommands[subcommand](idToken, user, args);
+    await subcommands[subcommand](idToken, user, args);
   } else {
     console.log(color.red.bold(`Unable to find subcommand ${subcommand}`));
   }

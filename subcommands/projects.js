@@ -106,7 +106,7 @@ export async function projects(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    subcommands[subcommand](idToken, user, args.slice(1));
+    await subcommands[subcommand](idToken, user, args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
   }
