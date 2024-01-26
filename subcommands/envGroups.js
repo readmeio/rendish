@@ -1,6 +1,7 @@
 import { fetchEnvGroups, fetchTeams } from "../graphql.js";
 import { die, nbTable } from "../ui.js";
 
+import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
@@ -14,8 +15,8 @@ OPTIONS
 
 SUBCOMMANDS
 
-list               list available projects
-listEnvs <project> list environments within a project
+list                list available projects
+listVars <envGroup> list variables in an environment group
 `);
 }
 
