@@ -3,22 +3,27 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { login, fetchTeams } from "./graphql.js";
+import { login, RequestError } from "./graphql.js";
+import { projects } from "./subcommands/projects.js";
+import { die } from "./ui.js";
 
 import esMain from "es-main";
 import minimist from "minimist";
 
-/**
- * Print usage information
- */
 function usage() {
-  console.log(`Usage: render-bootleg [<options>] [<url>]
+  console.log(`Usage: rb [<options>] [<command>] [args]
 
 render.com CLI
 
 OPTIONS
 
 --help:     display this text
+
+COMMANDS
+
+For help with any command, use \`rb <command> --help\`
+
+projects    list available projects
 `);
 }
 
@@ -59,6 +64,11 @@ function saveToken(idToken, expiresAt, user) {
   );
 }
 
+// ideas list:
+// - ability to use a global flag to format output as json
+// - convert to typescript or at least add type annotations
+// - allow commands and subcommands to throw, and handle it nicely with an
+//   error printed to the console
 async function main() {
   // Check for presence of required environment variables
   ["RENDER_USER", "RENDER_PASS", "RENDER_TOTP"].forEach((envVar) => {
@@ -68,7 +78,7 @@ async function main() {
 
   // parse the command line arguments with minimist:
   // https://github.com/minimistjs/minimist#example
-  const argv = minimist(process.argv.slice(2));
+  const argv = minimist(process.argv.slice(2), { stopEarly: true });
 
   // if the help flag is present, just print usage and quit
   if (argv.help) {
@@ -87,12 +97,25 @@ async function main() {
 
   saveToken(idToken, expiresAt, user);
 
-  console.log(user);
+  const command = argv._[0];
 
-  // for now, just assume that we want the first team. revisit
-  const { id: teamID } = await fetchTeams(idToken, user)[0];
+  const commands = {
+    projects: projects,
+  };
 
-  console.log("teamID: ", teamID);
+  try {
+    if (command in commands) {
+      commands[command](idToken, user, argv._.slice(1));
+    } else {
+      die(`Unable to find command ${command}`);
+    }
+  } catch (e) {
+    if (e instanceof RequestError) {
+      die(e.message);
+    } else {
+      throw e;
+    }
+  }
 }
 
 if (esMain(import.meta)) {

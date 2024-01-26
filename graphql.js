@@ -1,7 +1,12 @@
+import { inspect } from "node:util";
+
 import totp from "totp-generator";
 
 const GRAPHQL_URI = "https://api.render.com/graphql";
 // const GRAPHQL_URI = "https://httpbingo.org/anything";
+
+export function RequestError() {}
+RequestError.prototype = new Error();
 
 async function req(token, body) {
   const headers = { "Content-Type": "application/json" };
@@ -18,12 +23,16 @@ async function req(token, body) {
   });
   if (!res.ok) {
     const errorBody = await res.text();
-    throw new Error(`error with request ${body}:\n${errorBody}`);
+    throw new RequestError(
+      `error with request ${inspect(body)}:\n${inspect(errorBody)}`
+    );
   }
   const resBody = await res.json();
   if (resBody.errors) {
     console.log("Request failure", resBody.errors, res);
-    throw new Error(`Request failure: ${JSON.stringify(resBody.errors)}`);
+    throw new RequestError(
+      `Request failure: ${JSON.stringify(resBody.errors)}`
+    );
   }
   return resBody;
 }
@@ -92,6 +101,88 @@ export async function fetchTeams(token, user) {
         "query teamsForUserMinimal($userId: String!) {\n  teamsForUser(userId: $userId) {\n    id\n    name\n    email\n    __typename\n  }\n}\n",
     })
   );
-  console.log("fuck you:", body.data);
   return body.data.teamsForUser;
+}
+
+// example return:[
+//      {
+//        "id": "prj-cisrv7dph6et1s9p8q00",
+//        "name": "readme",
+//        "owner": {
+//          "id": "tea-chn5hr1mbg5577jbgb8g",
+//          "__typename": "Owner"
+//        },
+//        "environments": [
+//          {
+//            "id": "evm-cj618lavvtos73fcmur0",
+//            "name": "Production",
+//            "services": [
+//              {
+//                "id": "srv-cktf3gub0mos73c7cs20",
+//                "state": "Running",
+//                "suspenders": [],
+//                "__typename": "Server"
+//              },
+//            ],
+//            "databases": [],
+//            "redises": [
+//              {
+//                "id": "red-cl1a7bgp2gis738mnq1g",
+//                "status": "AVAILABLE",
+//                "suspenders": [
+//                  "a",
+//                  "b",
+//                  "c",
+//                  "d"
+//                ],
+//                "__typename": "Redis"
+//              },
+//            ],
+//            "__typename": "Environment"
+//          },
+//       ],
+//       "__typename": "Project"
+//    }
+//  ]
+export async function fetchProjects(token, team) {
+  const body = await req(
+    token,
+    JSON.stringify({
+      operationName: "projects",
+      variables: { filter: { ownerId: team } },
+      query:
+        "query projects($filter: ProjectFilterInput!) {\n  projects(filter: $filter) {\n    id\n    name\n    owner {\n      id\n      __typename\n    }\n    environments {\n      id\n      name\n      services {\n        id\n        state\n        suspenders\n        __typename\n      }\n      databases {\n        id\n        status\n        suspenders\n        __typename\n      }\n      redises {\n        id\n        status\n        suspenders\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+    })
+  );
+  return body.data.projects;
+}
+
+// returns data like:
+//{
+//      "id": "prj-cisrv7dph6et1s9p8q00",
+//      "name": "readme",
+//      "owner": {
+//        "id": "tea-chn5hr1mbg5577jbgb8g",
+//        "__typename": "Owner"
+//      },
+//      "environments": [
+//        {
+//           "id": "evm-cj618lavvtos73fcmur0",
+//           "name": "Production",
+//           "services": [...],
+//           "databases": [...],
+//           "redises": [...],
+//           "envGroups": [...],
+//           "__typename": "Environment",
+//        }, ...],
+//      "__typename": "Project"
+//    }
+export async function fetchProjectResources(token, projectID) {
+  const body = await req(token, {
+    operationName: "projectResources",
+    variables: { id: projectID },
+    query:
+      "query projectResources($id: String!) {\n  project(id: $id) {\n    id\n    name\n    owner {\n      id\n      __typename\n    }\n    environments {\n      id\n      name\n      services {\n        ...serviceFields\n        __typename\n      }\n      databases {\n        ...databaseFields\n        __typename\n      }\n      redises {\n        ...redisFields\n        __typename\n      }\n      envGroups {\n        ...envGroupFields\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment serviceFields on Service {\n  id\n  type\n  env {\n    ...envFields\n    __typename\n  }\n  repo {\n    ...repoFields\n    __typename\n  }\n  user {\n    id\n    email\n    __typename\n  }\n  owner {\n    id\n    email\n    billingStatus\n    featureFlags\n    __typename\n  }\n  name\n  slug\n  sourceBranch\n  buildCommand\n  buildFilter {\n    paths\n    ignoredPaths\n    __typename\n  }\n  buildPlan {\n    name\n    cpu\n    mem\n    __typename\n  }\n  externalImage {\n    ...externalImageFields\n    __typename\n  }\n  autoDeploy\n  userFacingType\n  userFacingTypeSlug\n  baseDir\n  dockerCommand\n  dockerfilePath\n  createdAt\n  updatedAt\n  outboundIPs\n  region {\n    id\n    description\n    __typename\n  }\n  registryCredential {\n    id\n    name\n    __typename\n  }\n  rootDir\n  shellURL\n  state\n  suspenders\n  sshAddress\n  sshServiceAvailable\n  lastDeployedAt\n  maintenanceScheduledAt\n  pendingMaintenanceBy\n  environment {\n    ...environmentFields\n    __typename\n  }\n  __typename\n}\n\nfragment envFields on Env {\n  id\n  name\n  language\n  isStatic\n  sampleBuildCommand\n  sampleStartCommand\n  __typename\n}\n\nfragment environmentFields on Environment {\n  id\n  name\n  project {\n    id\n    name\n    owner {\n      id\n      __typename\n    }\n    __typename\n  }\n  __typename\n}\n\nfragment repoFields on Repo {\n  id\n  provider\n  providerId\n  name\n  ownerName\n  webURL\n  isPrivate\n  __typename\n}\n\nfragment externalImageFields on ExternalImage {\n  imageHost\n  imageName\n  imageRef\n  imageRepository\n  imageURL\n  ownerId\n  registryCredentialId\n  __typename\n}\n\nfragment databaseFields on Database {\n  id\n  createdAt\n  updatedAt\n  databaseName\n  databaseUser\n  datadogAPIKey\n  externalHostname\n  externalPort\n  expiresAt\n  highAvailability\n  isMaxPlan\n  ipAllowList {\n    cidrBlock\n    description\n    __typename\n  }\n  name\n  plan\n  region {\n    id\n    description\n    __typename\n  }\n  owner {\n    id\n    billingStatus\n    user {\n      id\n      __typename\n    }\n    featureFlags\n    __typename\n  }\n  status\n  stripeConnection\n  suspenders\n  type\n  userFacingType\n  productVersion\n  role\n  replicas {\n    name\n    id\n    __typename\n  }\n  primary {\n    name\n    id\n    __typename\n  }\n  postgresMajorVersion\n  environment {\n    ...environmentFields\n    __typename\n  }\n  pointInTimeRecoveryEligibility\n  __typename\n}\n\nfragment redisFields on Redis {\n  createdAt\n  id\n  name\n  owner {\n    id\n    __typename\n  }\n  plan\n  region {\n    id\n    description\n    __typename\n  }\n  status\n  updatedAt\n  type\n  userFacingType\n  suspenders\n  environment {\n    ...environmentFields\n    __typename\n  }\n  __typename\n}\n\nfragment envGroupFields on EnvGroup {\n  id\n  name\n  ownerId\n  createdAt\n  updatedAt\n  envVars {\n    ...envVarFields\n    __typename\n  }\n  environment {\n    ...environmentFields\n    __typename\n  }\n  __typename\n}\n\nfragment envVarFields on EnvVar {\n  id\n  isFile\n  key\n  value\n  __typename\n}\n",
+  });
+  return body.data.project;
 }
