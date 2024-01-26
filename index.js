@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { login, RequestError } from "./graphql.js";
 import { projects } from "./subcommands/projects.js";
+import { services } from "./subcommands/services.js";
 import { die } from "./ui.js";
 
 import esMain from "es-main";
@@ -49,6 +50,10 @@ function validTokenExists() {
   return true;
 }
 
+/**
+ * Load a saved token
+ * @returns {Promise<import('./graphql.js').Login>}
+ */
 function loadToken() {
   return JSON.parse(fs.readFileSync(path.join(configDir, "token.json")));
 }
@@ -101,6 +106,7 @@ async function main() {
 
   const commands = {
     projects: projects,
+    services: services,
   };
 
   try {
