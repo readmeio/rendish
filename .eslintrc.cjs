@@ -4,6 +4,7 @@ module.exports = {
       "es6": true,
     },
     "extends": "eslint:recommended",
+    "ignorePatterns": ["dist/*"],
     "overrides": [
         {
             "env": {
