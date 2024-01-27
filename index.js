@@ -32,6 +32,8 @@ COMMANDS
 For help with any command, use \`rb <command> --help\`
 
 auth        auth to render
+envGroups   render environment groups
+logs        tail logs from a service
 projects    render projects
 services    render services
 `);
@@ -126,6 +128,4 @@ async function main() {
   }
 }
 
-if (esMain(import.meta)) {
-  await main();
-}
+main();
