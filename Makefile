@@ -4,8 +4,6 @@ JS_FILES := $(shell git ls-files '*.js')
 
 # build the `rb` (render-bootleg) binary
 #
-# This seems to fail right now with an error about importing modules?
-#
 # https://nodejs.org/api/single-executable-applications.html
 dist/rb: dist/rb.js
 	node --experimental-sea-config sea-config.json
