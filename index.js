@@ -77,6 +77,9 @@ function loadToken() {
 //   error printed to the console
 // - handle logout
 // - handle token expiry
+// - verbose flag
+// - way for user to specify region, some commands are region-specific (ex:
+//   logs)
 async function main() {
   // parse the command line arguments with minimist:
   // https://github.com/minimistjs/minimist#example
