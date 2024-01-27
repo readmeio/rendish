@@ -14,7 +14,6 @@ import {
 } from "./subcommands/index.js";
 import { die, display } from "./ui.js";
 
-import esMain from "es-main";
 import minimist from "minimist";
 
 function usage() {
