@@ -1,6 +1,6 @@
-import { fetchLogs, fetchTeams, fetchServices } from "../graphql.js";
+import { fetchTeams, fetchServices } from "../graphql.js";
 import { tailLogs } from "../log_socket.js";
-import { die, nbTable } from "../ui.js";
+import { die } from "../ui.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";

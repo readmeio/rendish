@@ -52,7 +52,7 @@ export async function login() {
   return { idToken, expiresAt, user };
 }
 
-async function show() {
+function show() {
   console.log(String(fs.readFileSync(path.join(ConfigDir, "token.json"))));
 }
 
