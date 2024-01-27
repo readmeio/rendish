@@ -1,4 +1,5 @@
 import { fetchLogs, fetchTeams, fetchServices } from "../graphql.js";
+import { tailLogs } from "../log_socket.js";
 import { die, nbTable } from "../ui.js";
 
 import color from "colors-cli/safe";
@@ -22,7 +23,13 @@ tail <serviceIdOrName>   tail logs for the service given by Id or Name
 async function findServiceByName(token, user, teamId, name) {
   const services = await fetchServices(token, teamId);
 
-  return services.find((s) => s.name == name)?.id;
+  return services.find((s) => s.name == name);
+}
+
+async function findServiceById(token, user, teamId, serviceId) {
+  const services = await fetchServices(token, teamId);
+
+  return services.find((s) => s.id == serviceId);
 }
 
 async function tailService(token, user, args) {
@@ -34,19 +41,15 @@ async function tailService(token, user, args) {
     );
   }
 
-  const serviceId = args[0].startsWith("svc-")
-    ? args[0]
+  const service = args[0].startsWith("svc-")
+    ? await findServiceById(token, user, teamId, args[0])
     : await findServiceByName(token, user, teamId, args[0]);
 
-  if (!serviceId) {
-    die(`Unable to find env group from id or name ${serviceId}`);
+  if (!service.id) {
+    die(`Unable to find env group from id or name ${args[0]}`);
   }
 
-  const logs = await fetchLogs(token, teamId, serviceId);
-
-  nbTable(
-    [["time", "message"]].concat(logs.logs.map((l) => [l.timestamp, l.text]))
-  );
+  tailLogs(token, service.id, service.owner.id);
 }
 
 export async function logs(idToken, user, args) {
