@@ -12,7 +12,7 @@ import {
   projects,
   services,
 } from "./subcommands/index.js";
-import { die } from "./ui.js";
+import { die, display } from "./ui.js";
 
 import esMain from "es-main";
 import minimist from "minimist";
@@ -100,15 +100,16 @@ async function main() {
 
   const commands = {
     auth: auth,
-    projects: projects,
-    services: services,
     envGroups: envGroups,
     logs: logs,
+    projects: projects,
+    services: services,
   };
 
   try {
     if (command in commands) {
-      await commands[command](idToken, user, argv._.slice(1));
+      const data = await commands[command](idToken, user, argv._.slice(1));
+      display(data);
     } else {
       die(`Unable to find command ${command}`);
     }

@@ -22,7 +22,6 @@ OPTIONS
 
 SUBCOMMANDS
 
-login    login and create saved config
 show     show saved login information
 `);
 }
@@ -53,10 +52,13 @@ export async function login() {
 }
 
 function show() {
-  console.log(String(fs.readFileSync(path.join(ConfigDir, "token.json"))));
+  return {
+    type: "json",
+    data: String(fs.readFileSync(path.join(ConfigDir, "token.json"))),
+  };
 }
 
-export async function auth(_, __, args) {
+export function auth(_, __, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -66,12 +68,11 @@ export async function auth(_, __, args) {
   const subcommand = argv._[0];
 
   const subcommands = {
-    login: login,
     show: show,
   };
 
   if (subcommand in subcommands) {
-    await subcommands[subcommand](args.slice(1));
+    return subcommands[subcommand](args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
   }

@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 import color from "colors-cli/safe";
 import { table, getBorderCharacters } from "table";
 
@@ -12,6 +14,18 @@ export function nbTable(data) {
     drawHorizontalLine: () => false,
   });
   console.log(output);
+}
+
+export function display(data) {
+  if (!data?.type) return;
+  switch (data.type) {
+    case "table":
+      nbTable(data.data);
+      break;
+    case "json":
+      console.log(inspect(JSON.parse(data.data)));
+      break;
+  }
 }
 
 export function die(err, code) {

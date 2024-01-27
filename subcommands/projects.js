@@ -30,11 +30,12 @@ async function listProjects(idToken, user) {
 
   const projects = await fetchProjects(idToken, teamId);
 
-  nbTable(
-    [["name", "id", "# of environments"]].concat(
+  return {
+    type: "table",
+    data: [["name", "id", "# of environments"]].concat(
       projects.map((p) => [p.name, p.id, p.environments.length])
-    )
-  );
+    ),
+  };
 }
 
 async function findProjectIdByName(idToken, user, name) {
@@ -70,8 +71,9 @@ async function listProjectEnvs(idToken, user, args) {
     die(`Unexpected error getting resources for projectId ${projectId}`);
   }
 
-  nbTable(
-    [
+  return {
+    type: "table",
+    data: [
       ["name", "id", "services", "databases", "redises", "environment groups"],
     ].concat(
       projectResources.environments.map((e) => [
@@ -82,11 +84,11 @@ async function listProjectEnvs(idToken, user, args) {
         e.redises.length,
         e.envGroups.length,
       ])
-    )
-  );
+    ),
+  };
 }
 
-export async function projects(idToken, user, args) {
+export function projects(idToken, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -102,7 +104,7 @@ export async function projects(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    await subcommands[subcommand](idToken, user, args.slice(1));
+    return subcommands[subcommand](idToken, user, args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
   }

@@ -45,16 +45,17 @@ async function listEnvGroups(token, user) {
 
   const envGroups = await fetchEnvGroups(token, teamId);
 
-  nbTable(
-    [["name", "id", "variables", "secret files"]].concat(
+  return {
+    type: "table",
+    data: [["name", "id", "variables", "secret files"]].concat(
       envGroups.map((e) => [
         e.name,
         e.id,
         countVars(e.envVars)[0],
         countVars(e.envVars)[1],
       ])
-    )
-  );
+    ),
+  };
 }
 
 async function findEnvGroupByName(token, user, name) {
@@ -84,7 +85,7 @@ async function resolveEnvGroup(token, user, envGroupIdOrName) {
     : await findEnvGroupByName(token, user, envGroupIdOrName);
 
   if (!envGroupId) {
-    die(`Unable to find env group from id or name ${envGroupId}`);
+    die(`Unable to find env group from id or name ${envGroupIdOrName}`);
   }
 
   return envGroupId;
@@ -94,21 +95,25 @@ async function listEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const envGroup = await fetchEnvGroup(token, envGroupId);
 
-  nbTable(
-    [["id", "key", "value"]].concat(
+  return {
+    type: "table",
+    data: [["id", "key", "value"]].concat(
       envGroup.envVars.map((e) => [e.id, e.key, e.value])
-    )
-  );
+    ),
+  };
 }
 
 async function listServicesForEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const services = await fetchEnvGroupServices(token, envGroupId);
 
-  nbTable([["name", "id"]].concat(services.map((s) => [s.name, s.id])));
+  return {
+    type: "table",
+    data: [["name", "id"]].concat(services.map((s) => [s.name, s.id])),
+  };
 }
 
-export async function envGroups(idToken, user, args) {
+export function envGroups(idToken, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -124,7 +129,7 @@ export async function envGroups(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    await subcommands[subcommand](idToken, user, args.slice(1));
+    return subcommands[subcommand](idToken, user, args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
   }

@@ -25,8 +25,9 @@ async function listServices(idToken, user) {
 
   const services = await fetchServices(idToken, teamID);
 
-  nbTable(
-    [["name", "id", "state", "type", "deploy type", "slug"]].concat(
+  return {
+    type: "table",
+    data: [["name", "id", "state", "type", "deploy type", "slug"]].concat(
       services.map((s) => [
         s.name,
         s.id,
@@ -35,8 +36,8 @@ async function listServices(idToken, user) {
         s.env?.name,
         s.slug,
       ])
-    )
-  );
+    ),
+  };
 }
 
 export async function services(idToken, user, args) {
@@ -53,7 +54,7 @@ export async function services(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    await subcommands[subcommand](idToken, user, args);
+    return subcommands[subcommand](idToken, user, args);
   } else {
     console.log(color.red.bold(`Unable to find subcommand ${subcommand}`));
   }
