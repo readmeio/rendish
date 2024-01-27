@@ -16,14 +16,17 @@ export function nbTable(data) {
   console.log(output);
 }
 
-export function display(data) {
+export function display(data, options) {
+  const { json } = options;
   if (!data?.type) return;
   switch (data.type) {
     case "table":
-      nbTable(data.data);
+      json ? console.log(JSON.stringify(data.data)) : nbTable(data.data);
       break;
     case "json":
-      console.log(inspect(JSON.parse(data.data)));
+      json
+        ? console.log(data.data)
+        : console.log(inspect(JSON.parse(data.data)));
       break;
   }
 }

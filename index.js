@@ -24,6 +24,7 @@ render.com CLI
 
 OPTIONS
 
+--json:     display output as json
 --help:     display this text
 
 COMMANDS
@@ -83,7 +84,10 @@ function loadToken() {
 async function main() {
   // parse the command line arguments with minimist:
   // https://github.com/minimistjs/minimist#example
-  const argv = minimist(process.argv.slice(2), { stopEarly: true });
+  const argv = minimist(process.argv.slice(2), {
+    boolean: ["json"],
+    stopEarly: true,
+  });
 
   // if the help flag is present, just print usage and quit
   if (argv.help) {
@@ -109,7 +113,7 @@ async function main() {
   try {
     if (command in commands) {
       const data = await commands[command](idToken, user, argv._.slice(1));
-      display(data);
+      display(data, { json: argv.json });
     } else {
       die(`Unable to find command ${command}`);
     }
