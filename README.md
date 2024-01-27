@@ -35,5 +35,4 @@ The commands that this tool supports are in flux, and there are usage notes at t
 
 - handle token expiration
 - solidify the interface and document it
-- log tailing
 - ssh connection
