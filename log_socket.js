@@ -2,6 +2,8 @@ import WebSocket from "ws";
 
 const host = "wss://api.render.com/graphql";
 
+// XXX: do I want to allow multiple services? different region? different
+// starting time? All are supported within the graphql request
 /**
  * Connect to a given service and start dumping its messages
  */
@@ -32,13 +34,13 @@ export function tailLogs(token, serviceId, ownerId) {
 
       let log = msg.payload.data.logAdded;
       //convert the labels array into a map
-      let labels = log.labels.reduce((o, v) => {
-        o[v["label"]] = v["value"];
-        return o;
-      }, {});
+      // let labels = log.labels.reduce((o, v) => {
+      //   o[v["label"]] = v["value"];
+      //   return o;
+      // }, {});
 
       //output the log message
-      console.log(`${labels["SERVICE"]} ${log.timestamp} ${log.text}`);
+      console.log(`${log.timestamp} ${log.text}`);
       return;
     }
 
