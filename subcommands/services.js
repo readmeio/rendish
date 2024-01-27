@@ -1,5 +1,4 @@
 import { fetchTeams, fetchServices } from "../graphql.js";
-import { nbTable } from "../ui.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
@@ -40,7 +39,7 @@ async function listServices(idToken, user) {
   };
 }
 
-export async function services(idToken, user, args) {
+export function services(idToken, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
