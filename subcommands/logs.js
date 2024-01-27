@@ -45,7 +45,7 @@ async function tailService(token, user, args) {
     ? await findServiceById(token, user, teamId, args[0])
     : await findServiceByName(token, user, teamId, args[0]);
 
-  if (!service.id) {
+  if (!service?.id) {
     die(`Unable to find env group from id or name ${args[0]}`);
   }
 
