@@ -218,6 +218,7 @@ export async function fetchTeams(token, user) {
  * @property {string} maintenanceScheduledAt?
  * @property {string} pendingMaintenanceBy?
  * @property {Environment} environment
+ * @property {Metrics} metrics
  */
 
 /**
@@ -438,4 +439,48 @@ export async function fetchLogs(token, teamId, serviceId) {
   });
 
   return body.data.logs;
+}
+
+/**
+ * @typedef {Object} SampleValue
+ * @property {string} time
+ * @property {number} memory
+ * @property {number} cpu
+ * @property {string} __typename
+ */
+
+/**
+ * @typedef {Object} Metrics
+ * @property {SampleValue[]} samples
+ * @property {string} __typename
+ */
+
+/**
+ * Fetch metrics for a given service in a given team
+ *
+ * @param {string} token
+ * @param {string} serviceId
+ * @param {number} historyMinutes
+ * @param {number} step
+ * @returns {Promise<Server>} A server instance with the `metrics` field
+ *                            populated
+ */
+export async function serviceMetrics(
+  token,
+  serviceId,
+  historyMinutes = 720,
+  step = 60
+) {
+  const body = await req(token, {
+    operationName: "serviceMetrics",
+    variables: {
+      serviceId,
+      historyMinutes,
+      step,
+    },
+    query:
+      "query serviceMetrics($serviceId: String!, $historyMinutes: Int!, $step: Int!) {\n  service(id: $serviceId) {\n    env {\n      id\n      language\n      name\n      __typename\n    }\n    metrics(historyMinutes: $historyMinutes, step: $step) {\n      samples {\n        time\n        memory\n        cpu\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+  });
+
+  return body.data.service;
 }

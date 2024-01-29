@@ -1,4 +1,4 @@
-import { fetchTeams, fetchServices } from "../graphql.js";
+import { fetchTeams, fetchServices, serviceMetrics } from "../graphql.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
@@ -14,15 +14,16 @@ OPTIONS
 
 SUBCOMMANDS
 
-list    list all services
+list               list all services
+metrics <service>  print metrics for a given service
 `);
 }
 
-async function listServices(idToken, user) {
+async function listServices(token, user) {
   // for now, just assume that we want the first team. revisit
-  const { id: teamID } = (await fetchTeams(idToken, user))[0];
+  const { id: teamID } = (await fetchTeams(token, user))[0];
 
-  const services = await fetchServices(idToken, teamID);
+  const services = await fetchServices(token, teamID);
 
   return {
     type: "table",
@@ -39,6 +40,68 @@ async function listServices(idToken, user) {
   };
 }
 
+/**
+ * get a Server by its id
+ *
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string} serviceId
+ * @returns {Promise<import('../graphql.js').Server>}
+ */
+async function getServiceById(token, user, serviceId) {
+  const { id: teamID } = (await fetchTeams(token, user))[0];
+  const services = await fetchServices(token, teamID);
+
+  return services.find((s) => s.id == serviceId);
+}
+
+/**
+ * get a Server by its name
+ *
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string} serviceId
+ * @returns {Promise<import('../graphql.js').Server>}
+ */
+async function getServiceByName(token, user, serviceName) {
+  const { id: teamID } = (await fetchTeams(token, user))[0];
+  const services = await fetchServices(token, teamID);
+
+  return services.find((s) => s.name == serviceName);
+}
+
+/**
+ * subcommand to get service metrics
+ *
+ * ex: `rb service metrics server-prod`
+ *
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string} serviceNameOrId
+ * @returns {Promise<Any>}
+ */
+async function getServiceMetrics(token, user, args) {
+  const serviceNameOrId = args[0];
+
+  const service = serviceNameOrId.startsWith("srv-")
+    ? await getServiceById(token, user, serviceNameOrId)
+    : await getServiceByName(token, user, serviceNameOrId);
+
+  if (!service) {
+    throw new Error(`Unable to find service ${serviceNameOrId}`);
+  }
+
+  const metrics = await serviceMetrics(token, service.id);
+  //const memory = metrics.metrics.samples.map((s) => [s.time, s.memory]);
+  //const cpu = metrics.metrics.samples.map((s) => [s.time, s.cpu]);
+  return {
+    type: "table",
+    data: [["time", "memory", "cpu"]].concat(
+      metrics.metrics.samples.map((s) => [s.time, s.memory, s.cpu])
+    ),
+  };
+}
+
 export function services(idToken, user, args) {
   const argv = minimist(args);
 
@@ -50,10 +113,11 @@ export function services(idToken, user, args) {
 
   const subcommands = {
     list: listServices,
+    metrics: getServiceMetrics,
   };
 
   if (subcommand in subcommands) {
-    return subcommands[subcommand](idToken, user, args);
+    return subcommands[subcommand](idToken, user, args.slice(1));
   } else {
     console.log(color.red.bold(`Unable to find subcommand ${subcommand}`));
   }
