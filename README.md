@@ -26,6 +26,7 @@ The first time you run a command, the program will ask you for your username, pa
 
 - This tool hasn't yet existed for a week so I don't yet know how to handle token expiration
 - This tool assumes that you use 2fa to log in
+- If you have an oauth login, you will need to go into the accounts page and create a password, which will allow you to log in with your oauth email as your username
 
 ## Commands
 
