@@ -31,6 +31,13 @@ The first time you run a command, the program will ask you for your username, pa
 
 The commands that this tool supports are in flux, and there are usage notes at the root (`rb --help`) for each subcommand (for example, `rb auth --help`). Use the help text to explore the tool.
 
+## Building a binary
+
+- install bun: `curl -fsSL https://bun.sh/install | bash`
+- run `make`
+
+If that was successful, you should have a binary executable at `dist/rb` that you can place anywhere in your system path.
+
 ## TODO
 
 - handle token expiration
