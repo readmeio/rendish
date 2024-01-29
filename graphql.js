@@ -217,8 +217,9 @@ export async function fetchTeams(token, user) {
  * @property {string} lastDeployedAt?
  * @property {string} maintenanceScheduledAt?
  * @property {string} pendingMaintenanceBy?
- * @property {Environment} environment
- * @property {Metrics} metrics
+ * @property {Environment} environment?
+ * @property {Metrics} metrics?
+ * @property {Bandwidth} bandwidthMB?
  */
 
 /**
@@ -456,7 +457,7 @@ export async function fetchLogs(token, teamId, serviceId) {
  */
 
 /**
- * Fetch metrics for a given service in a given team
+ * Fetch metrics for a given service
  *
  * @param {string} token
  * @param {string} serviceId
@@ -483,4 +484,39 @@ export async function serviceMetrics(
   });
 
   return body.data.service;
+}
+
+/**
+ * @typedef {Object} BandwidthPoint
+ * @property {string} time
+ * @property {number} bandwidthMB
+ * @property {string} __typename
+ */
+
+/**
+ * @typedef {Object} Bandwidth
+ * @property {number} totalMB
+ * @property {BandwidthPoint[]} points
+ * @property {string} __typename
+ */
+
+/**
+ * Fetch bandwidth for a given service
+ *
+ * @param {string} token
+ * @param {string} serviceId
+ * @returns {Promise<Server>} A server instance with the `bandwidthMB` field
+ *                            populated
+ */
+export async function serverBandwidth(token, serviceId) {
+  const body = await req(token, {
+    operationName: "serverBandwidth",
+    variables: {
+      serverId: serviceId,
+    },
+    query:
+      "query serverBandwidth($serverId: String!) {\n  server(id: $serverId) {\n    id\n    bandwidthMB {\n      totalMB\n      points {\n        time\n        bandwidthMB\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n",
+  });
+
+  return body.data.server;
 }

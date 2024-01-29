@@ -1,4 +1,9 @@
-import { fetchTeams, fetchServices, serviceMetrics } from "../graphql.js";
+import {
+  fetchTeams,
+  fetchServices,
+  serverBandwidth,
+  serviceMetrics,
+} from "../graphql.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
@@ -14,8 +19,9 @@ OPTIONS
 
 SUBCOMMANDS
 
-list               list all services
-metrics <service>  print metrics for a given service
+list                list all services
+bandwidth <service> print bandwidth usage for a given service
+metrics <service>   print metrics for a given service
 `);
 }
 
@@ -92,12 +98,40 @@ async function getServiceMetrics(token, user, args) {
   }
 
   const metrics = await serviceMetrics(token, service.id);
-  //const memory = metrics.metrics.samples.map((s) => [s.time, s.memory]);
-  //const cpu = metrics.metrics.samples.map((s) => [s.time, s.cpu]);
   return {
     type: "table",
     data: [["time", "memory", "cpu"]].concat(
       metrics.metrics.samples.map((s) => [s.time, s.memory, s.cpu])
+    ),
+  };
+}
+
+/**
+ * subcommand to get service bandwidth
+ *
+ * ex: `rb service metrics server-prod`
+ *
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string} serviceNameOrId
+ * @returns {Promise<Any>}
+ */
+async function getServiceBandwidth(token, user, args) {
+  const serviceNameOrId = args[0];
+
+  const service = serviceNameOrId.startsWith("srv-")
+    ? await getServiceById(token, user, serviceNameOrId)
+    : await getServiceByName(token, user, serviceNameOrId);
+
+  if (!service) {
+    throw new Error(`Unable to find service ${serviceNameOrId}`);
+  }
+
+  const metrics = await serverBandwidth(token, service.id);
+  return {
+    type: "table",
+    data: [["time", "bandwidth"]].concat(
+      metrics.bandwidthMB.points.map((s) => [s.time, s.bandwidthMB])
     ),
   };
 }
@@ -114,6 +148,7 @@ export function services(idToken, user, args) {
   const subcommands = {
     list: listServices,
     metrics: getServiceMetrics,
+    bandwidth: getServiceBandwidth,
   };
 
   if (subcommand in subcommands) {
