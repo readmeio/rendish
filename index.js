@@ -102,6 +102,9 @@ async function main() {
     : await login();
 
   const command = argv._[0];
+  if (!command) {
+    return usage();
+  }
 
   const commands = {
     auth: auth,
