@@ -46,9 +46,15 @@ export const ConfigDir = path.join(
 
 function initConfig() {
   if (!fs.existsSync(ConfigDir)) {
-    fs.mkdir(ConfigDir, {
-      recursive: true,
-    });
+    fs.mkdir(
+      ConfigDir,
+      {
+        recursive: true,
+      },
+      (err) => {
+        if (err) throw err;
+      }
+    );
   }
 }
 
