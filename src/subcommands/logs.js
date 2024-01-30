@@ -6,7 +6,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] logs <subcommand> [args]
+  console.log(`Usage: rendish [<options>] logs <subcommand> [args]
 
 ${color.yellow("logs")} subcommand
 

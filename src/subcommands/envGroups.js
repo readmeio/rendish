@@ -10,7 +10,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] envGroups <subcommand> [args]
+  console.log(`Usage: rendish [<options>] envGroups <subcommand> [args]
 
 ${color.yellow("envGroups")} subcommand
 

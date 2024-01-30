@@ -10,7 +10,7 @@ import minimist from "minimist";
 import promptSync from "prompt-sync";
 
 function usage() {
-  console.log(`Usage: rb [<options>] [<command>] [args]
+  console.log(`Usage: rendish [<options>] [<command>] [args]
 
 ${color.yellow("auth")} subcommand
 

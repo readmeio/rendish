@@ -12,7 +12,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] services <subcommand> [args]
+  console.log(`Usage: rendish [<options>] services <subcommand> [args]
 
 ${color.yellow("services")} subcommand
 
@@ -89,7 +89,7 @@ async function getServiceByName(token, user, serviceName) {
 /**
  * subcommand to get service metrics
  *
- * ex: `rb service metrics server-prod`
+ * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user
@@ -120,7 +120,7 @@ async function getServiceMetrics(token, user, args) {
 /**
  * subcommand to get service bandwidth
  *
- * ex: `rb service metrics server-prod`
+ * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user
@@ -151,7 +151,7 @@ async function getServiceBandwidth(token, user, args) {
 /**
  * subcommand to get service bandwidth
  *
- * ex: `rb service metrics server-prod`
+ * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user

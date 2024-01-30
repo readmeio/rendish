@@ -1,4 +1,4 @@
-# render-bootleg
+# rendish
 
 An unofficial render API that uses their GraphQL API rather than their REST API.
 
@@ -11,36 +11,30 @@ I've created a new tool instead of extending [render-cli](https://github.com/ren
 
 ## Installing
 
-Right now, the best way to install this repository is:
-
-- Clone it to a directory
-- Run `npm install`
-- Symlink `index.js` to `rb` (short for `render-bootleg`. Give it any name you like)
-  - example command: `ln -sf $(pwd)/index.js /usr/local/bin/rb`
-
-This is an annoying way to install software! If people seem interested, I'll develop it into a proper binary.
+`npm install -g rendish`
 
 ## Authorizing
 
 The first time you run a command, the program will ask you for your username, password, and TOTP code (one-time password). At that point, it will save the authentication token it receives, which is good for a week.
 
-- This tool hasn't yet existed for a week so I don't yet know how to handle token expiration
-- This tool assumes that you use 2fa to log in
-- If you have an oauth login, you will need to go into the accounts page and create a password, which will allow you to log in with your oauth email as your username
+If you currently only us an oauth login, you will need to go into the accounts page and create a password, which will allow you to log in with your oauth email as your username
+
+This tool assumes that you use 2fa to log in; enable 2fa if you haven't yet.
 
 ## Commands
 
-The commands that this tool supports are in flux, and there are usage notes at the root (`rb --help`) for each subcommand (for example, `rb auth --help`). Use the help text to explore the tool.
+The commands that this tool supports are in flux, and there are usage notes at the root (`rendish --help`) for each subcommand (for example, `rendish services --help`). Use the help text to explore the tool.
 
 ## Building a binary
 
 - install bun: `curl -fsSL https://bun.sh/install | bash`
 - run `make`
 
-If that was successful, you should have a binary executable at `dist/rb` that you can place anywhere in your system path.
+If that was successful, you should have a binary executable at `dist/rendish` that you can place anywhere in your system path.
+
+The binary is currently experimental, and the recommended way to install is via `npm`.
 
 ## TODO
 
-- handle token expiration
+- handle token expiration better
 - solidify the interface and document it
-- ssh connection

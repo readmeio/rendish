@@ -9,7 +9,7 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] project <subcommand> [args]
+  console.log(`Usage: rendish [<options>] project <subcommand> [args]
 
 ${color.yellow("projects")} subcommand
 

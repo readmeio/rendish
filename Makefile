@@ -1,10 +1,8 @@
-NODE_BIN ?= $(shell asdf which node || nvm which node || command -v node)
-UNAME_S := $(shell uname -s)
 JS_FILES := $(shell git ls-files '*.js')
 
-# build the `rb` (render-bootleg) binary
+# build the rendish binary
 dist/rb: $(JS_FILES) dependencies
-	bun build --compile src/index.js --outfile dist/rb --target=node
+	bun build --compile src/index.js --outfile dist/rendish --target=node
 
 .PHONY: dependencies
 dependencies:

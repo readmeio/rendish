@@ -17,9 +17,9 @@ import { die, display } from "./ui.js";
 import minimist from "minimist";
 
 function usage() {
-  console.log(`Usage: rb [<options>] [<command>] [args]
+  console.log(`Usage: rendish [<options>] [<command>] [args]
 
-render.com CLI
+An unofficial render.com CLI
 
 OPTIONS
 
@@ -28,7 +28,7 @@ OPTIONS
 
 COMMANDS
 
-For help with any command, use \`rb <command> --help\`
+For help with any command, use \`rendish <command> --help\`
 
 auth        auth to render
 envGroups   render environment groups
@@ -42,11 +42,7 @@ if (!process.env.HOME) {
   throw new Error("HOME environment variable must be set");
 }
 
-export const ConfigDir = path.join(
-  process.env.HOME,
-  ".config",
-  "render-bootleg"
-);
+export const ConfigDir = path.join(process.env.HOME, ".config", "rendish");
 
 function initConfig() {
   if (!fs.existsSync(ConfigDir)) {

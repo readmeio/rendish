@@ -1,15 +1,24 @@
 {
-  "name": "render-bootleg",
+  "name": "rendish",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An unofficial CLI for render.com",
+  "license": "MIT",
+  "author": "ReadMe <support@readme.io> (https://readme.com)",
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .js",
     "type": "tsc --noEmit"
   },
-  "author": "",
-  "license": "ISC",
+  "bin": {
+    "rendish": "./src/index.js"
+  },
+  "keywords": [
+    "render",
+    "cli"
+  ],
   "dependencies": {
     "colors-cli": "^1.0.33",
     "minimist": "^1.2.8",
