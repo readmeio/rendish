@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "lint": "eslint . --ext .js"
+    "lint": "eslint . --ext .js",
+    "type": "tsc --noEmit"
   },
   "author": "",
   "license": "ISC",
