@@ -121,8 +121,11 @@ async function main() {
     auth: auth,
     envGroups: envGroups,
     logs: logs,
+    log: logs, //alias
     projects: projects,
+    project: projects, // alias
     services: services,
+    service: services, // alias
   };
 
   try {
