@@ -47,7 +47,7 @@ export async function login() {
   console.log(
     "If you normally log in to render via oauth, you will need to go into account settings and add a password to your account\n"
   );
-  const username = prompt("username: ");
+  const username = prompt("email: ");
   const password = prompt.hide("password: ");
   const { idToken: signInToken } = await signIn(username, password);
 
