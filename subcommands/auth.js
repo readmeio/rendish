@@ -43,6 +43,10 @@ function saveToken(idToken, expiresAt, user) {
 export async function login() {
   const prompt = promptSync();
 
+  // TODO: can we log people in via oauth?
+  console.log(
+    "If you normally log in to render via oauth, you will need to go into account settings and add a password to your account\n"
+  );
   const username = prompt("username: ");
   const password = prompt.hide("password: ");
   const { idToken: signInToken } = await signIn(username, password);
