@@ -169,7 +169,7 @@ async function openSshConnection(token, user, args) {
   }
 
   console.log(`connecting: ssh ${service.sshAddress}`);
-  spawn("ssh", [service.sshAddress], {
+  spawn("ssh", [service.sshAddress].concat(args.slice(1)), {
     stdio: "inherit",
   });
 }
