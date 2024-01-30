@@ -1,3 +1,5 @@
+import { spawn } from "node:child_process";
+
 import {
   fetchTeams,
   fetchServices,
@@ -23,6 +25,8 @@ SUBCOMMANDS
 list                list all services
 bandwidth <service> print bandwidth usage for a given service
 metrics <service>   print metrics for a given service
+ssh <service>       connect to <service> via ssh. Assumes you've added your ssh
+                    key: https://docs.render.com/ssh-keys
 `);
 }
 
@@ -145,10 +149,36 @@ async function getServiceBandwidth(token, user, args) {
 }
 
 /**
+ * subcommand to get service bandwidth
+ *
+ * ex: `rb service metrics server-prod`
+ *
  * @param {string} token
  * @param {import('../graphql.js').User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}>|void}
+ * @returns {Promise<void>}>}
+ */
+async function openSshConnection(token, user, args) {
+  const service = args[0].startsWith("srv-")
+    ? await getServiceById(token, user, args[0])
+    : await getServiceByName(token, user, args[0]);
+
+  if (!service) {
+    die(`Unable to find service ${args[0]}`);
+    throw new Error("unreachable");
+  }
+
+  console.log(`connecting: ssh ${service.sshAddress}`);
+  spawn("ssh", [service.sshAddress], {
+    stdio: "inherit",
+  });
+}
+
+/**
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}|void>|void}
  */
 export function services(token, user, args) {
   const argv = minimist(args);
@@ -159,11 +189,12 @@ export function services(token, user, args) {
 
   const subcommand = argv._[0];
 
-  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}|void>> */
   const subcommands = {
     list: listServices,
     metrics: getServiceMetrics,
     bandwidth: getServiceBandwidth,
+    ssh: openSshConnection,
   };
 
   if (subcommand in subcommands) {
