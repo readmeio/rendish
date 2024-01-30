@@ -3,7 +3,11 @@ import { inspect } from "node:util";
 import color from "colors-cli/safe";
 import { table, getBorderCharacters } from "table";
 
-// draw a table without a border
+/**
+ * draw a table without a border
+ *
+ * @param {any} data
+ */
 export function nbTable(data) {
   const output = table(data, {
     border: getBorderCharacters("void"),
@@ -16,6 +20,10 @@ export function nbTable(data) {
   console.log(output);
 }
 
+/**
+ * @param {{type: string, data: any}} data
+ * @param {any} options
+ */
 export function display(data, options) {
   const { json } = options;
   if (!data?.type) return;
@@ -31,7 +39,14 @@ export function display(data, options) {
   }
 }
 
-export function die(err, code) {
+/**
+ * print an error and quit
+ *
+ * @param {string} err
+ * @param {number} [code]
+ * @returns never
+ */
+export function die(err, code = 1) {
   console.log(color.red.bold(err));
-  process.exit(code || 1);
+  process.exit(code);
 }

@@ -18,6 +18,11 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "eslint": "^8.54.0"
+    "@tsconfig/node20": "^20.1.2",
+    "@types/minimist": "^1.2.5",
+    "@types/prompt-sync": "^4.2.3",
+    "@types/ws": "^8.5.10",
+    "eslint": "^8.54.0",
+    "typescript": "^5.3.3"
   }
 }

@@ -9,12 +9,20 @@ import { inspect } from "node:util";
 const GRAPHQL_URI = "https://api.render.com/graphql";
 
 export class RequestError extends Error {
+  /**
+   * @param {string} message
+   */
   constructor(message) {
     super(message);
   }
 }
 
+/**
+ * @param {string?} token
+ * @param {Object} body
+ */
 async function req(token, body) {
+  /** @type {Record<string, string>} */
   const headers = { "Content-Type": "application/json" };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -33,8 +41,10 @@ async function req(token, body) {
       `error with request ${inspect(body)}:\n${inspect(errorBody)}`
     );
   }
-  const resBody = await res.json();
-  if (resBody.errors) {
+  const resBody = /** @type {{errors: string[], data: any}} */ (
+    await res.json()
+  );
+  if (!resBody || resBody?.errors) {
     throw new RequestError(
       `Request failure: ${JSON.stringify(resBody.errors)}`
     );
@@ -71,10 +81,12 @@ async function req(token, body) {
 /**
  * Sign a user in - does not handle TOTP
  *
+ * @param {string} user
+ * @param {string} pass
  * @returns {Promise<Login>} the user object, their id token, and an expiry
  */
 export async function signIn(user, pass) {
-  const body = await req(undefined, {
+  const body = await req(null, {
     operationName: "signIn",
     variables: {
       email: user,
@@ -118,7 +130,7 @@ export async function signInTOTP(token, totpcode) {
  * Fetch the teams for a given user
  *
  * @param {string} token
- * @param {string} user
+ * @param {User} user
  * @returns {Promise<Team[]>} An array of Team objects for the given user
  */
 export async function fetchTeams(token, user) {
@@ -187,7 +199,7 @@ export async function fetchTeams(token, user) {
  * @property {string} __typename
  * @property {string} type?
  * @property {Env} env?
- * @property {Any} repo? // TODO
+ * @property {any} repo? // TODO
  * @property {User} user
  * @property {Owner} owner
  * @property {string} name?
@@ -244,6 +256,7 @@ export async function fetchTeams(token, user) {
  * @property {Server[]} services?
  * @property {Database[]} databases?
  * @property {Redis[]} redises?
+ * @property {EnvGroup[]} envGroups?
  * @property {string} __typename
  */
 

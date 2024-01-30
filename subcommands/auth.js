@@ -9,8 +9,6 @@ import color from "colors-cli/safe";
 import minimist from "minimist";
 import promptSync from "prompt-sync";
 
-const prompt = promptSync();
-
 function usage() {
   console.log(`Usage: rb [<options>] [<command>] [args]
 
@@ -26,6 +24,11 @@ show     show saved login information
 `);
 }
 
+/**
+ * @param {string} idToken
+ * @param {string} expiresAt
+ * @param {import('../graphql.js').User} user
+ */
 function saveToken(idToken, expiresAt, user) {
   fs.writeFileSync(
     path.join(ConfigDir, "token.json"),
@@ -38,6 +41,8 @@ function saveToken(idToken, expiresAt, user) {
 }
 
 export async function login() {
+  const prompt = promptSync();
+
   const username = prompt("username: ");
   const password = prompt.hide("password: ");
   const { idToken: signInToken } = await signIn(username, password);
@@ -58,6 +63,11 @@ function show() {
   };
 }
 
+/**
+ * @param {any} _
+ * @param {any} __
+ * @param {string[]} args
+ */
 export function auth(_, __, args) {
   const argv = minimist(args);
 
@@ -67,6 +77,7 @@ export function auth(_, __, args) {
 
   const subcommand = argv._[0];
 
+  /** @type Record<string, (args:string[]) => any> */
   const subcommands = {
     show: show,
   };

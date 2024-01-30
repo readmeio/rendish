@@ -39,6 +39,10 @@ function countVars(grp) {
   return [nvars, l - nvars];
 }
 
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ */
 async function listEnvGroups(token, user) {
   // for now, just assume that we want the first team. revisit
   const { id: teamId } = (await fetchTeams(token, user))[0];
@@ -51,13 +55,19 @@ async function listEnvGroups(token, user) {
       envGroups.map((e) => [
         e.name,
         e.id,
-        countVars(e.envVars)[0],
-        countVars(e.envVars)[1],
+        countVars(e.envVars)[0].toString(),
+        countVars(e.envVars)[1].toString(),
       ])
     ),
   };
 }
 
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string} name
+ * @returns {Promise<string|undefined>} envGroupId
+ */
 async function findEnvGroupByName(token, user, name) {
   const { id: teamId } = (await fetchTeams(token, user))[0];
 
@@ -68,9 +78,9 @@ async function findEnvGroupByName(token, user, name) {
 
 /**
  * Given a string that may represent an envGroup Id or name, resolve it to an envGroup id
- * @params {string} token
- * @params {User} user
- * @params {string} envGroupIdOrName
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string} envGroupIdOrName
  * @returns {Promise<string>} envGroupId
  */
 async function resolveEnvGroup(token, user, envGroupIdOrName) {
@@ -86,11 +96,20 @@ async function resolveEnvGroup(token, user, envGroupIdOrName) {
 
   if (!envGroupId) {
     die(`Unable to find env group from id or name ${envGroupIdOrName}`);
+    throw new Error("unreachable");
   }
 
+  // XXX TODO: here's where I'm at, typescript is unhappy bc it doesn't
+  // understand that the die command kills the program
   return envGroupId;
 }
 
+/**
+ * Given a string that may represent an envGroup Id or name, resolve it to an envGroup id
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ */
 async function listEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const envGroup = await fetchEnvGroup(token, envGroupId);
@@ -103,6 +122,14 @@ async function listEnvGroup(token, user, args) {
   };
 }
 
+/**
+ * Return the services attached to an environment group
+ *
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}>}
+ */
 async function listServicesForEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const services = await fetchEnvGroupServices(token, envGroupId);
@@ -113,6 +140,12 @@ async function listServicesForEnvGroup(token, user, args) {
   };
 }
 
+/**
+ * @param {string} idToken
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}>|void}
+ */
 export function envGroups(idToken, user, args) {
   const argv = minimist(args);
 
@@ -122,6 +155,7 @@ export function envGroups(idToken, user, args) {
 
   const subcommand = argv._[0];
 
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
   const subcommands = {
     list: listEnvGroups,
     listVars: listEnvGroup,
@@ -131,6 +165,8 @@ export function envGroups(idToken, user, args) {
   if (subcommand in subcommands) {
     return subcommands[subcommand](idToken, user, args.slice(1));
   } else {
+    // XXX TODO: typescript also unable to believe that this command kills the program
     die(`Unable to find subcommand ${subcommand}`);
+    throw new Error("unreachable");
   }
 }

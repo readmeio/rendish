@@ -4,6 +4,7 @@ import {
   serverBandwidth,
   serviceMetrics,
 } from "../graphql.js";
+import { die } from "../ui.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
@@ -25,6 +26,11 @@ metrics <service>   print metrics for a given service
 `);
 }
 
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @returns {Promise<{type: string, data: any}>}
+ */
 async function listServices(token, user) {
   // for now, just assume that we want the first team. revisit
   const { id: teamID } = (await fetchTeams(token, user))[0];
@@ -52,7 +58,7 @@ async function listServices(token, user) {
  * @param {string} token
  * @param {import('../graphql.js').User} user
  * @param {string} serviceId
- * @returns {Promise<import('../graphql.js').Server>}
+ * @returns {Promise<import('../graphql.js').Server|undefined>}
  */
 async function getServiceById(token, user, serviceId) {
   const { id: teamID } = (await fetchTeams(token, user))[0];
@@ -66,8 +72,8 @@ async function getServiceById(token, user, serviceId) {
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user
- * @param {string} serviceId
- * @returns {Promise<import('../graphql.js').Server>}
+ * @param {string} serviceName
+ * @returns {Promise<import('../graphql.js').Server|undefined>}
  */
 async function getServiceByName(token, user, serviceName) {
   const { id: teamID } = (await fetchTeams(token, user))[0];
@@ -83,8 +89,8 @@ async function getServiceByName(token, user, serviceName) {
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user
- * @param {string} serviceNameOrId
- * @returns {Promise<Any>}
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}>}
  */
 async function getServiceMetrics(token, user, args) {
   const serviceNameOrId = args[0];
@@ -101,6 +107,7 @@ async function getServiceMetrics(token, user, args) {
   return {
     type: "table",
     data: [["time", "memory", "cpu"]].concat(
+      // @ts-ignore: typescript doesn't want to let us have numbers in the array
       metrics.metrics.samples.map((s) => [s.time, s.memory, s.cpu])
     ),
   };
@@ -113,8 +120,8 @@ async function getServiceMetrics(token, user, args) {
  *
  * @param {string} token
  * @param {import('../graphql.js').User} user
- * @param {string} serviceNameOrId
- * @returns {Promise<Any>}
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}>}
  */
 async function getServiceBandwidth(token, user, args) {
   const serviceNameOrId = args[0];
@@ -131,12 +138,19 @@ async function getServiceBandwidth(token, user, args) {
   return {
     type: "table",
     data: [["time", "bandwidth"]].concat(
+      // @ts-ignore: typescript doesn't want to let us have numbers in the array
       metrics.bandwidthMB.points.map((s) => [s.time, s.bandwidthMB])
     ),
   };
 }
 
-export function services(idToken, user, args) {
+/**
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data: any}>|void}
+ */
+export function services(token, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -145,6 +159,7 @@ export function services(idToken, user, args) {
 
   const subcommand = argv._[0];
 
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
   const subcommands = {
     list: listServices,
     metrics: getServiceMetrics,
@@ -152,8 +167,9 @@ export function services(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    return subcommands[subcommand](idToken, user, args.slice(1));
+    return subcommands[subcommand](token, user, args.slice(1));
   } else {
-    console.log(color.red.bold(`Unable to find subcommand ${subcommand}`));
+    die(`Unable to find subcommand ${subcommand}`);
+    throw new Error("unreachable");
   }
 }

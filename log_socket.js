@@ -6,6 +6,10 @@ const host = "wss://api.render.com/graphql";
 // starting time? All are supported within the graphql request
 /**
  * Connect to a given service and start dumping its messages
+ *
+ * @param {string} token
+ * @param {string} serviceId
+ * @param {string} ownerId
  */
 export function tailLogs(token, serviceId, ownerId) {
   const ws = new WebSocket(host, {
@@ -28,7 +32,7 @@ export function tailLogs(token, serviceId, ownerId) {
 
   ws.on("message", function message(data) {
     if (connected) {
-      let msg = JSON.parse(data);
+      let msg = JSON.parse(data.toString());
       // verify that the message is a logAdded message
       if (!msg?.payload?.data?.logAdded) return;
 
@@ -46,7 +50,7 @@ export function tailLogs(token, serviceId, ownerId) {
 
     // if we haven't yet connected, send a message that starts us listening to
     // the log socket, and get the last 4 minutes' worth of logs
-    if (JSON.parse(data)["type"] == "ka" && !connected) {
+    if (JSON.parse(data.toString())["type"] == "ka" && !connected) {
       const now = new Date();
       const fourMinutesAgo = new Date(now.getTime() - 4 * 60 * 1000);
       ws.send(

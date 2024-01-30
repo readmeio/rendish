@@ -38,6 +38,10 @@ services    render services
 `);
 }
 
+if (!process.env.HOME) {
+  throw new Error("HOME environment variable must be set");
+}
+
 export const ConfigDir = path.join(
   process.env.HOME,
   ".config",
@@ -72,10 +76,12 @@ function validTokenExists() {
 
 /**
  * Load a saved token
- * @returns {Promise<import('./graphql.js').Login>}
+ * @returns {import('./graphql.js').Login}
  */
 function loadToken() {
-  return JSON.parse(fs.readFileSync(path.join(ConfigDir, "token.json")));
+  return JSON.parse(
+    fs.readFileSync(path.join(ConfigDir, "token.json")).toString()
+  );
 }
 
 // ideas list:
@@ -103,15 +109,14 @@ async function main() {
 
   initConfig();
 
-  let { idToken, user } = validTokenExists()
-    ? await loadToken()
-    : await login();
+  let { idToken, user } = validTokenExists() ? loadToken() : await login();
 
   const command = argv._[0];
   if (!command) {
     return usage();
   }
 
+  /** @type Record<string, (token:string, user:import('./graphql.js').User, args:string[]) => any> */
   const commands = {
     auth: auth,
     envGroups: envGroups,

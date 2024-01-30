@@ -20,18 +20,37 @@ tail <serviceIdOrName>   tail logs for the service given by Id or Name
 `);
 }
 
-async function findServiceByName(token, user, teamId, name) {
+/**
+ * @param {string} token
+ * @param {string} teamId
+ * @param {string} name
+ * @returns {Promise<import("../graphql.js").Server|undefined>} envGroupId
+ */
+async function findServiceByName(token, teamId, name) {
   const services = await fetchServices(token, teamId);
 
   return services.find((s) => s.name == name);
 }
 
-async function findServiceById(token, user, teamId, serviceId) {
+/**
+ * @param {string} token
+ * @param {string} teamId
+ * @param {string} serviceId
+ * @returns {Promise<import("../graphql.js").Server|undefined>} envGroupId
+ */
+async function findServiceById(token, teamId, serviceId) {
   const services = await fetchServices(token, teamId);
 
   return services.find((s) => s.id == serviceId);
 }
 
+/**
+ * Tail the logs for the service given as args[0]
+ *
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ */
 async function tailService(token, user, args) {
   const { id: teamId } = (await fetchTeams(token, user))[0];
 
@@ -42,17 +61,23 @@ async function tailService(token, user, args) {
   }
 
   const service = args[0].startsWith("svc-")
-    ? await findServiceById(token, user, teamId, args[0])
-    : await findServiceByName(token, user, teamId, args[0]);
+    ? await findServiceById(token, teamId, args[0])
+    : await findServiceByName(token, teamId, args[0]);
 
   if (!service?.id) {
     die(`Unable to find env group from id or name ${args[0]}`);
+    throw Error("unreachable");
   }
 
   tailLogs(token, service.id, service.owner.id);
 }
 
-export async function logs(idToken, user, args) {
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ */
+export function logs(token, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -61,12 +86,13 @@ export async function logs(idToken, user, args) {
 
   const subcommand = argv._[0];
 
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => void> */
   const subcommands = {
     tail: tailService,
   };
 
   if (subcommand in subcommands) {
-    await subcommands[subcommand](idToken, user, args.slice(1));
+    subcommands[subcommand](token, user, args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
   }

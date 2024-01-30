@@ -24,49 +24,63 @@ listEnvs <project> list environments within a project
 `);
 }
 
-async function listProjects(idToken, user) {
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @returns {Promise<{type: string, data: any}>}
+ */
+async function listProjects(token, user) {
   // for now, just assume that we want the first team. revisit
-  const { id: teamId } = (await fetchTeams(idToken, user))[0];
+  const { id: teamId } = (await fetchTeams(token, user))[0];
 
-  const projects = await fetchProjects(idToken, teamId);
+  const projects = await fetchProjects(token, teamId);
 
   return {
     type: "table",
     data: [["name", "id", "# of environments"]].concat(
-      projects.map((p) => [p.name, p.id, p.environments.length])
+      projects.map((p) => [p.name, p.id, p.environments.length.toString()])
     ),
   };
 }
 
-async function findProjectIdByName(idToken, user, name) {
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string} name
+ * @returns {Promise<string|undefined>}
+ */
+async function findProjectIdByName(token, user, name) {
   // for now, just assume that we want the first team. revisit
-  const { id: teamId } = (await fetchTeams(idToken, user))[0];
+  const { id: teamId } = (await fetchTeams(token, user))[0];
 
-  const projects = await fetchProjects(idToken, teamId);
+  const projects = await fetchProjects(token, teamId);
 
   return projects.find((p) => p.name == name)?.id;
 }
 
-async function listProjectEnvs(idToken, user, args) {
-  let projectId = args[0];
-
-  if (!projectId) {
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data:any}>}
+ */
+async function listProjectEnvs(token, user, args) {
+  if (!args[0]) {
     die(
       `You must provide a project Id or name as the first argument to listEnvs`
     );
   }
 
-  if (!projectId.startsWith("prj-")) {
-    //assume that if the argument doesn't start with prj-, it represents a
-    //project name not a project id
-    projectId = await findProjectIdByName(idToken, user, projectId);
-  }
+  const projectId = args[0].startsWith("prj-")
+    ? args[0]
+    : await findProjectIdByName(token, user, args[0]);
 
   if (!projectId) {
     die(`Unable to find project from Id or name ${args[0]}`);
+    throw new Error("unreachable");
   }
 
-  const projectResources = await fetchProjectResources(idToken, projectId);
+  const projectResources = await fetchProjectResources(token, projectId);
   if (!projectResources) {
     die(`Unexpected error getting resources for projectId ${projectId}`);
   }
@@ -79,16 +93,22 @@ async function listProjectEnvs(idToken, user, args) {
       projectResources.environments.map((e) => [
         e.name,
         e.id,
-        e.services.length,
-        e.databases.length,
-        e.redises.length,
-        e.envGroups.length,
+        e.services.length.toString(),
+        e.databases.length.toString(),
+        e.redises.length.toString(),
+        e.envGroups.length.toString(),
       ])
     ),
   };
 }
 
-export function projects(idToken, user, args) {
+/**
+ * @param {string} token
+ * @param {import("../graphql.js").User} user
+ * @param {string[]} args
+ * @returns {Promise<{type: string, data:any}>|void}
+ */
+export function projects(token, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
@@ -97,6 +117,7 @@ export function projects(idToken, user, args) {
 
   const subcommand = argv._[0];
 
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
   const subcommands = {
     list: listProjects,
     listEnvs: listProjectEnvs,
@@ -104,8 +125,9 @@ export function projects(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    return subcommands[subcommand](idToken, user, args.slice(1));
+    return subcommands[subcommand](token, user, args.slice(1));
   } else {
     die(`Unable to find subcommand ${subcommand}`);
+    throw new Error("unreachable");
   }
 }
