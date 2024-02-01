@@ -112,7 +112,9 @@ async function main() {
     return usage();
   }
 
-  /** @type Record<string, (token:string, user:import('./graphql.js').User, args:string[]) => any> */
+  /** @typedef {(token: string, user: import("./graphql.js").User, args: string[]) =>
+   *               Promise<import("./ui.js").DataWrapper|null|void>|void} commandFunc */
+  /** @type Record<string, commandFunc> */
   const commands = {
     auth: auth,
     envGroups: envGroups,
@@ -127,7 +129,9 @@ async function main() {
   try {
     if (command in commands) {
       const data = await commands[command](idToken, user, argv._.slice(1));
-      display(data, { json: argv.json });
+      if (data) {
+        display(data, { json: argv.json });
+      }
     } else {
       die(`Unable to find command ${command}`);
     }

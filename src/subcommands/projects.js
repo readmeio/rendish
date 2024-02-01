@@ -9,11 +9,6 @@ import { die } from "../ui.js";
 import color from "colors-cli/safe";
 import minimist from "minimist";
 
-/**
- * @typedef {import("../graphql.js").User} User
- * @typedef {import("../graphql.js").ProjectID} ProjectID
- */
-
 function usage() {
   console.log(`Usage: rendish [<options>] project <subcommand> [args]
 
@@ -32,8 +27,8 @@ listEnvs <project> list environments within a project
 
 /**
  * @param {string} token
- * @param {User} user
- * @returns {Promise<{type: string, data: any}>}
+ * @param {import("../graphql.js").User} user
+ * @returns {Promise<import("../ui.js").DataWrapper>}
  */
 async function listProjects(token, user) {
   // for now, just assume that we want the first team. revisit
@@ -51,9 +46,9 @@ async function listProjects(token, user) {
 
 /**
  * @param {string} token
- * @param {User} user
+ * @param {import("../graphql.js").User} user
  * @param {string} name
- * @returns {Promise<ProjectID|undefined>}
+ * @returns {Promise<import("../graphql.js").ProjectID|undefined>}
  */
 async function findProjectIdByName(token, user, name) {
   // for now, just assume that we want the first team. revisit
@@ -66,9 +61,9 @@ async function findProjectIdByName(token, user, name) {
 
 /**
  * @param {string} token
- * @param {User} user
+ * @param {import("../graphql.js").User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data:any}>}
+ * @returns {Promise<import("../ui.js").DataWrapper>}
  */
 async function listProjectEnvs(token, user, args) {
   if (!args[0]) {
@@ -112,7 +107,7 @@ async function listProjectEnvs(token, user, args) {
  * @param {string} token
  * @param {import("../graphql.js").User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data:any}>|void}
+ * @returns {Promise<import("../ui.js").DataWrapper>|void}
  */
 export function projects(token, user, args) {
   const argv = minimist(args);
@@ -123,7 +118,7 @@ export function projects(token, user, args) {
 
   const subcommand = argv._[0];
 
-  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<import("../ui.js").DataWrapper>> */
   const subcommands = {
     list: listProjects,
     listEnvs: listProjectEnvs,

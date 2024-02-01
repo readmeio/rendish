@@ -124,7 +124,7 @@ export async function signInTOTP(token, totpcode) {
 
 /**
  * @typedef {Object} Team
- * @property {string} id
+ * @property {TeamID} id
  * @property {string} name
  * @property {string} email
  * @property {string} __typename
@@ -148,12 +148,12 @@ export async function fetchTeams(token, user) {
 }
 
 /**
- * @typedef {`tea-${string}`} OwnerID
+ * @typedef {`tea-${string}`} TeamID
  */
 
 /**
  * @typedef {Object} Owner
- * @property {OwnerID} id
+ * @property {TeamID} id
  * @property {string} __typename
  * @property {string} email?
  * @property {string} billingStatus? // "ACTIVE", what else?

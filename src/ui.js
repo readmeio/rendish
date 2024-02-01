@@ -1,7 +1,14 @@
 import { inspect } from "node:util";
-
 import color from "colors-cli/safe";
 import { table, getBorderCharacters } from "table";
+
+/**
+ * All subcommands should return a DataWrapper or undefined
+ *
+ * @typedef DataWrapper
+ * @prop {"table"|"json"} type? the type of data that's been returned
+ * @prop {any} data the actual data
+ */
 
 /**
  * draw a table without a border
@@ -21,7 +28,7 @@ export function nbTable(data) {
 }
 
 /**
- * @param {{type: string, data: any}} data
+ * @param {DataWrapper} data
  * @param {any} options
  */
 export function display(data, options) {

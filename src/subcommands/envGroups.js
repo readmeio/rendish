@@ -30,7 +30,7 @@ services <envGroup> list services attached to the given env group
  * given an EnvGroup, count up how many elements are variables and how many
  * are secret files. Returns an array [# of variables, # of secret files]
  *
- * @param {import("../graphql.js").EnvVar[]} grp
+ * @param {import('../graphql.js').EnvVar[]} grp
  * @returns {[number, number]} number of variables, number of secret files
  */
 function countVars(grp) {
@@ -41,7 +41,8 @@ function countVars(grp) {
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
+ * @returns {Promise<import('../ui.js').DataWrapper>}
  */
 async function listEnvGroups(token, user) {
   // for now, just assume that we want the first team. revisit
@@ -64,7 +65,7 @@ async function listEnvGroups(token, user) {
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string} name
  * @returns {Promise<string|undefined>} envGroupId
  */
@@ -79,7 +80,7 @@ async function findEnvGroupByName(token, user, name) {
 /**
  * Given a string that may represent an envGroup Id or name, resolve it to an envGroup id
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string} envGroupIdOrName
  * @returns {Promise<string>} envGroupId
  */
@@ -107,8 +108,9 @@ async function resolveEnvGroup(token, user, envGroupIdOrName) {
 /**
  * Given a string that may represent an envGroup Id or name, resolve it to an envGroup id
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string[]} args
+ * @returns {Promise<import('../ui.js').DataWrapper>}
  */
 async function listEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
@@ -126,9 +128,9 @@ async function listEnvGroup(token, user, args) {
  * Return the services attached to an environment group
  *
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}>}
+ * @returns {Promise<import('../ui.js').DataWrapper>}
  */
 async function listServicesForEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
@@ -141,21 +143,25 @@ async function listServicesForEnvGroup(token, user, args) {
 }
 
 /**
- * @param {string} idToken
- * @param {import("../graphql.js").User} user
+ * @param {string} token
+ * @param {import('../graphql.js').User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}>|void}
+ * @returns Promise<import('../ui.js').DataWrapper?>
  */
-export function envGroups(idToken, user, args) {
+export function envGroups(token, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
-    return usage();
+    usage();
+    return Promise.resolve(null);
   }
 
   const subcommand = argv._[0];
 
-  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}>> */
+  /** @type Record<string,
+   *              (token: string, user: import('../graphql.js').User, args:string[]) =>
+   *                  Promise<import('../ui.js').DataWrapper>>
+   */
   const subcommands = {
     list: listEnvGroups,
     listVars: listEnvGroup,
@@ -163,7 +169,7 @@ export function envGroups(idToken, user, args) {
   };
 
   if (subcommand in subcommands) {
-    return subcommands[subcommand](idToken, user, args.slice(1));
+    return subcommands[subcommand](token, user, args.slice(1));
   } else {
     // XXX TODO: typescript also unable to believe that this command kills the program
     die(`Unable to find subcommand ${subcommand}`);

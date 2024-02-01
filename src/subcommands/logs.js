@@ -48,8 +48,9 @@ async function findServiceById(token, teamId, serviceId) {
  * Tail the logs for the service given as args[0]
  *
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string[]} args
+ * @returns Promise<void>
  */
 async function tailService(token, user, args) {
   const { id: teamId } = (await fetchTeams(token, user))[0];
@@ -74,19 +75,19 @@ async function tailService(token, user, args) {
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {import('../graphql.js').User} user
  * @param {string[]} args
  */
 export function logs(token, user, args) {
   const argv = minimist(args);
 
   if (argv.help || !argv._.length) {
-    return usage();
+    usage();
   }
 
   const subcommand = argv._[0];
 
-  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => void> */
+  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<void>> */
   const subcommands = {
     tail: tailService,
   };

@@ -11,6 +11,13 @@ import { die } from "../ui.js";
 import color from "colors-cli/safe";
 import minimist from "minimist";
 
+/**
+ * @typedef {import("../graphql.js").User} User
+ * @typedef {import("../graphql.js").Server} Server
+ * @typedef {import("../graphql.js").ProjectID} ProjectID
+ * @typedef {import("../ui.js").DataWrapper} DataWrapper
+ */
+
 function usage() {
   console.log(`Usage: rendish [<options>] services <subcommand> [args]
 
@@ -32,8 +39,8 @@ ssh <service>       connect to <service> via ssh. Assumes you've added your ssh
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
- * @returns {Promise<{type: string, data: any}>}
+ * @param {User} user
+ * @returns {Promise<DataWrapper>}
  */
 async function listServices(token, user) {
   // for now, just assume that we want the first team. revisit
@@ -60,9 +67,9 @@ async function listServices(token, user) {
  * get a Server by its id
  *
  * @param {string} token
- * @param {import('../graphql.js').User} user
+ * @param {User} user
  * @param {string} serviceId
- * @returns {Promise<import('../graphql.js').Server|undefined>}
+ * @returns {Promise<Server|undefined>}
  */
 async function getServiceById(token, user, serviceId) {
   const { id: teamID } = (await fetchTeams(token, user))[0];
@@ -75,9 +82,9 @@ async function getServiceById(token, user, serviceId) {
  * get a Server by its name
  *
  * @param {string} token
- * @param {import('../graphql.js').User} user
+ * @param {User} user
  * @param {string} serviceName
- * @returns {Promise<import('../graphql.js').Server|undefined>}
+ * @returns {Promise<Server|undefined>}
  */
 async function getServiceByName(token, user, serviceName) {
   const { id: teamID } = (await fetchTeams(token, user))[0];
@@ -92,9 +99,9 @@ async function getServiceByName(token, user, serviceName) {
  * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
- * @param {import('../graphql.js').User} user
+ * @param {User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}>}
+ * @returns {Promise<DataWrapper>}
  */
 async function getServiceMetrics(token, user, args) {
   const serviceNameOrId = args[0];
@@ -123,9 +130,9 @@ async function getServiceMetrics(token, user, args) {
  * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
- * @param {import('../graphql.js').User} user
+ * @param {User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}>}
+ * @returns {Promise<DataWrapper>}
  */
 async function getServiceBandwidth(token, user, args) {
   const serviceNameOrId = args[0];
@@ -154,9 +161,9 @@ async function getServiceBandwidth(token, user, args) {
  * ex: `rendish service metrics server-prod`
  *
  * @param {string} token
- * @param {import('../graphql.js').User} user
+ * @param {User} user
  * @param {string[]} args
- * @returns {Promise<void>}>}
+ * @returns {Promise<void>}
  */
 async function openSshConnection(token, user, args) {
   const service = args[0].startsWith("srv-")
@@ -178,7 +185,7 @@ async function openSshConnection(token, user, args) {
  * @param {string} token
  * @param {import('../graphql.js').User} user
  * @param {string[]} args
- * @returns {Promise<{type: string, data: any}|void>|void}
+ * @returns Promise<DataWrapper | void> | void
  */
 export function services(token, user, args) {
   const argv = minimist(args);
@@ -189,7 +196,7 @@ export function services(token, user, args) {
 
   const subcommand = argv._[0];
 
-  /** @type Record<string, (token: string, user: import("../graphql.js").User, args:string[]) => Promise<{type: string, data: any}|void>> */
+  /** @type Record<string, (token: string, user: User, args:string[]) => Promise<DataWrapper|void>> */
   const subcommands = {
     list: listServices,
     metrics: getServiceMetrics,
