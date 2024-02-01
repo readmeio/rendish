@@ -53,8 +53,12 @@ async function req(token, body) {
 }
 
 /**
+ * @typedef {`usr-${string}`} UserID
+ */
+
+/**
  * @typedef {Object} User
- * @property {string} id
+ * @property {UserID} id
  * @property {boolean} active?
  * @property {string} createdAt?
  * @property {string} email
@@ -144,8 +148,12 @@ export async function fetchTeams(token, user) {
 }
 
 /**
+ * @typedef {`tea-${string}`} OwnerID
+ */
+
+/**
  * @typedef {Object} Owner
- * @property {string} id
+ * @property {OwnerID} id
  * @property {string} __typename
  * @property {string} email?
  * @property {string} billingStatus? // "ACTIVE", what else?
@@ -173,6 +181,10 @@ export async function fetchTeams(token, user) {
  */
 
 /**
+ * @typedef {`rgc-${string}`} RegistryCredentialID
+ */
+
+/**
  * @typedef {Object} ExternalImage
  * @property {string} imageHost
  * @property {string} imageName
@@ -180,7 +192,7 @@ export async function fetchTeams(token, user) {
  * @property {string} imageRepository
  * @property {string} imageURL
  * @property {string} ownerId
- * @property {string} registryCredentialId
+ * @property {RegistryCredentialID} registryCredentialId
  * @property {string} __typename
  */
 
@@ -192,8 +204,54 @@ export async function fetchTeams(token, user) {
  */
 
 /**
+ * @typedef {`crn-${string}`} CronID
+ */
+/**
+ * @typedef {Object} Cron
+ * @property {CronID} id
+ * @property {Env} env?
+ * @property {any} repo? // TODO
+ * @property {User} user
+ * @property {Owner} owner
+ * @property {string} name?
+ * @property {string} slug?
+ * @property {string} sourceBranch?
+ * @property {string} buildCommand?
+ * @property {string} buildFilter?
+ * @property {BuildPlan} buildPlan?
+ * @property {ExternalImage} externalImage?
+ * @property {string} autoDeploy?
+ * @property {string} userFacingType?
+ * @property {string} userFacingTypeSlug?
+ * @property {string} baseDir?
+ * @property {string} dockerCommand?
+ * @property {string} dockerfilePath?
+ * @property {string} createdAt?
+ * @property {string} updatedAt?
+ * @property {string[]} outboundIPs?
+ * @property {Region} region?
+ * @property {string} registryCredential?
+ * @property {string} rootDir?
+ * @property {string} shellURL?
+ * @property {string} state? // "Running", what else?
+ * @property {string[]} suspenders?
+ * @property {string} sshAddress?
+ * @property {string} sshServiceAvailable? // "AVAILABLE", what else?
+ * @property {string} lastDeployedAt?
+ * @property {string} maintenanceScheduledAt?
+ * @property {string} pendingMaintenanceBy?
+ * @property {Environment} environment?
+ * @property {string} __typename
+ */
+
+// The API seems to use "service" and "server" interchangeably
+/**
+ * @typedef {`srv-${string}`} ServerID
+ */
+
+/**
  * @typedef {Object} Server
- * @property {string} id
+ * @property {ServerID} id
  * @property {string} state // "Running", what else?
  * @property {string[]} suspenders
  * @property {string} __typename
@@ -249,11 +307,15 @@ export async function fetchTeams(token, user) {
  */
 
 /**
+ * @typedef {`evm-${string}`} EnvironmentID
+ */
+
+/**
  * @typedef {Object} Environment
- * @property {string} id
+ * @property {EnvironmentID} id
  * @property {string} name
  * @property {Owner} owner?
- * @property {Server[]} services?
+ * @property {Array<Server|Cron>} services?
  * @property {Database[]} databases?
  * @property {Redis[]} redises?
  * @property {EnvGroup[]} envGroups?
@@ -261,8 +323,22 @@ export async function fetchTeams(token, user) {
  */
 
 /**
+ * @typedef {`prj-${string}`} ProjectID
+ */
+
+/**
+ * A type guard for project IDs
+ *
+ * @param {string|undefined} id
+ * @returns {id is ProjectID}
+ */
+export function isProjectId(id) {
+  return !!id?.startsWith("prj-");
+}
+
+/**
  * @typedef {Object} Project
- * @property {string} id
+ * @property {ProjectID} id
  * @property {string} name
  * @property {Owner} owner
  * @property {Environment[]} environments
@@ -289,7 +365,7 @@ export async function fetchProjects(token, teamId) {
  * Fetch the projects for a given team id
  *
  * @param {string} token
- * @param {string} projectId
+ * @param {ProjectID} projectId
  * @returns {Promise<Project>} An array of Team objects for the given user
  */
 export async function fetchProjectResources(token, projectId) {
@@ -323,7 +399,7 @@ export async function fetchServices(token, teamId) {
  * Fetch detailed information for a single service
  *
  * @param {string} token
- * @param {string} serviceId
+ * @param {ServerID} serviceId
  * @returns {Promise<Server>}
  */
 export async function fetchServer(token, serviceId) {
@@ -440,7 +516,7 @@ export async function fetchEnvGroupServices(token, envGroupId) {
  *
  * @param {string} token
  * @param {string} teamId
- * @param {string} serviceId
+ * @param {ServerID} serviceId
  * @returns {Promise<LogResult>} An array of services attached to the given environment group
  */
 export async function fetchLogs(token, teamId, serviceId) {
@@ -490,7 +566,7 @@ export async function fetchLogs(token, teamId, serviceId) {
  * Fetch metrics for a given service
  *
  * @param {string} token
- * @param {string} serviceId
+ * @param {ServerID} serviceId
  * @param {number} historyMinutes
  * @param {number} step
  * @returns {Promise<Server>} A server instance with the `metrics` field
@@ -534,7 +610,7 @@ export async function serviceMetrics(
  * Fetch bandwidth for a given service
  *
  * @param {string} token
- * @param {string} serviceId
+ * @param {ServerID} serviceId
  * @returns {Promise<Server>} A server instance with the `bandwidthMB` field
  *                            populated
  */

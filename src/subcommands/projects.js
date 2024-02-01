@@ -2,11 +2,17 @@ import {
   fetchTeams,
   fetchProjects,
   fetchProjectResources,
+  isProjectId,
 } from "../graphql.js";
 import { die } from "../ui.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
+
+/**
+ * @typedef {import("../graphql.js").User} User
+ * @typedef {import("../graphql.js").ProjectID} ProjectID
+ */
 
 function usage() {
   console.log(`Usage: rendish [<options>] project <subcommand> [args]
@@ -26,7 +32,7 @@ listEnvs <project> list environments within a project
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {User} user
  * @returns {Promise<{type: string, data: any}>}
  */
 async function listProjects(token, user) {
@@ -45,9 +51,9 @@ async function listProjects(token, user) {
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {User} user
  * @param {string} name
- * @returns {Promise<string|undefined>}
+ * @returns {Promise<ProjectID|undefined>}
  */
 async function findProjectIdByName(token, user, name) {
   // for now, just assume that we want the first team. revisit
@@ -60,7 +66,7 @@ async function findProjectIdByName(token, user, name) {
 
 /**
  * @param {string} token
- * @param {import("../graphql.js").User} user
+ * @param {User} user
  * @param {string[]} args
  * @returns {Promise<{type: string, data:any}>}
  */
@@ -75,7 +81,7 @@ async function listProjectEnvs(token, user, args) {
     ? args[0]
     : await findProjectIdByName(token, user, args[0]);
 
-  if (!projectId) {
+  if (!isProjectId(projectId)) {
     die(`Unable to find project from Id or name ${args[0]}`);
     throw new Error("unreachable");
   }
