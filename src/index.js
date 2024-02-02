@@ -15,6 +15,7 @@ import {
 import { die, display } from "./ui.js";
 
 import minimist from "minimist";
+import open from "open";
 
 function usage() {
   console.log(`Usage: rendish [<options>] [<command>] [args]
@@ -25,6 +26,7 @@ OPTIONS
 
 --json:     display output as json
 --help:     display this text
+--dash:     open the render dashboard in your browser (alias: dashboard)
 
 COMMANDS
 
@@ -94,13 +96,17 @@ async function main() {
   // parse the command line arguments with minimist:
   // https://github.com/minimistjs/minimist#example
   const argv = minimist(process.argv.slice(2), {
-    boolean: ["json"],
+    boolean: ["json", "dash", "dashboard"],
     stopEarly: true,
   });
 
   // if the help flag is present, just print usage and quit
   if (argv.help) {
     return usage();
+  }
+
+  if (argv.dash || argv.dashboard) {
+    return open("https://rndr.in/c/dashboard");
   }
 
   initConfig();
