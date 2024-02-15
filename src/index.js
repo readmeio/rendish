@@ -11,11 +11,22 @@ import {
   logs,
   projects,
   services,
+  version,
 } from "./subcommands/index.js";
 import { die, display } from "./ui.js";
 
+// importing JSON is still experimental in Node.JS
+// https://nodejs.org/docs/latest-v20.x/api/esm.html#import-attributes, and eslint
+// won't support it until stage 4:
+// https://github.com/eslint/eslint/discussions/15305#discussioncomment-1634740
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json");
+
 import minimist from "minimist";
 import open from "open";
+
+export const VERSION = pkg.version;
 
 function usage() {
   console.log(`Usage: rendish [<options>] [<command>] [args]
@@ -37,6 +48,8 @@ envGroups   render environment groups
 logs        tail logs from a service
 projects    render projects
 services    render services
+
+version ${VERSION}
 `);
 }
 
@@ -55,7 +68,7 @@ function initConfig() {
       },
       (err) => {
         if (err) throw err;
-      }
+      },
     );
   }
 }
@@ -78,7 +91,7 @@ function validTokenExists() {
  */
 function loadToken() {
   return JSON.parse(
-    fs.readFileSync(path.join(ConfigDir, "token.json")).toString()
+    fs.readFileSync(path.join(ConfigDir, "token.json")).toString(),
   );
 }
 
@@ -130,6 +143,7 @@ async function main() {
     project: projects, // alias
     services: services,
     service: services, // alias
+    version: version,
   };
 
   try {
