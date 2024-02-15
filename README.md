@@ -7,7 +7,7 @@ I've created a new tool instead of extending [render-cli](https://github.com/ren
 - Their REST API lacks coverage of all their facilities.
     - it does not cover environment groups or projects, for example
 - Their tool seems to be abandoned
-- While it's neat that they used deno, my only experience is in node and I don't want to require people to install a new runtime
+- I wanted to use node instead of deno
 
 ## Installing
 
@@ -24,15 +24,6 @@ This tool assumes that you use 2fa to log in; enable 2fa if you haven't yet.
 ## Commands
 
 The commands that this tool supports are in flux, and there are usage notes at the root (`rendish --help`) for each subcommand (for example, `rendish services --help`). Use the help text to explore the tool.
-
-## Building a binary
-
-- install bun: `curl -fsSL https://bun.sh/install | bash`
-- run `make`
-
-If that was successful, you should have a binary executable at `dist/rendish` that you can place anywhere in your system path.
-
-The binary is currently experimental, and the recommended way to install is via `npm`.
 
 ## TODO
 
