@@ -38,7 +38,7 @@ async function req(token, body) {
   if (!res.ok) {
     const errorBody = await res.text();
     throw new RequestError(
-      `error with request ${inspect(body)}:\n${inspect(errorBody)}`
+      `error with request ${inspect(body)}:\n${inspect(errorBody)}`,
     );
   }
   const resBody = /** @type {{errors: string[], data: any}} */ (
@@ -46,7 +46,7 @@ async function req(token, body) {
   );
   if (!resBody || resBody?.errors) {
     throw new RequestError(
-      `Request failure: ${JSON.stringify(resBody.errors)}`
+      `Request failure: ${JSON.stringify(resBody.errors)}`,
     );
   }
   return resBody;
@@ -576,7 +576,7 @@ export async function serviceMetrics(
   token,
   serviceId,
   historyMinutes = 720,
-  step = 60
+  step = 60,
 ) {
   const body = await req(token, {
     operationName: "serviceMetrics",

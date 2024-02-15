@@ -24,7 +24,7 @@ export function tailLogs(token, serviceId, ownerId) {
       JSON.stringify({
         type: "connection_init",
         payload: { Authorization: `Bearer ${token}` },
-      })
+      }),
     );
   });
 
@@ -77,7 +77,7 @@ export function tailLogs(token, serviceId, ownerId) {
             query:
               "subscription logAdded($query: LogSubscriptionInput!) {\n  logAdded(query: $query) {\n    ...logWithLabelsFields\n    __typename\n  }\n}\n\nfragment logWithLabelsFields on LogWithLabels {\n  id\n  labels {\n    label\n    value\n    __typename\n  }\n  timestamp\n  text\n  __typename\n}\n",
           },
-        })
+        }),
       );
       connected = true;
     }

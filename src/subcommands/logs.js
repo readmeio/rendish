@@ -57,7 +57,7 @@ async function tailService(token, user, args) {
 
   if (!args[0]) {
     die(
-      `You must provide a service id or name as the first argument to tailService`
+      `You must provide a service id or name as the first argument to tailService`,
     );
   }
 

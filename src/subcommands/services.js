@@ -58,7 +58,7 @@ async function listServices(token, user) {
         s.userFacingTypeSlug,
         s.env?.name,
         s.slug,
-      ])
+      ]),
     ),
   };
 }
@@ -119,7 +119,7 @@ async function getServiceMetrics(token, user, args) {
     type: "table",
     data: [["time", "memory", "cpu"]].concat(
       // @ts-ignore: typescript doesn't want to let us have numbers in the array
-      metrics.metrics.samples.map((s) => [s.time, s.memory, s.cpu])
+      metrics.metrics.samples.map((s) => [s.time, s.memory, s.cpu]),
     ),
   };
 }
@@ -150,7 +150,7 @@ async function getServiceBandwidth(token, user, args) {
     type: "table",
     data: [["time", "bandwidth"]].concat(
       // @ts-ignore: typescript doesn't want to let us have numbers in the array
-      metrics.bandwidthMB.points.map((s) => [s.time, s.bandwidthMB])
+      metrics.bandwidthMB.points.map((s) => [s.time, s.bandwidthMB]),
     ),
   };
 }

@@ -58,7 +58,7 @@ async function listEnvGroups(token, user) {
         e.id,
         countVars(e.envVars)[0].toString(),
         countVars(e.envVars)[1].toString(),
-      ])
+      ]),
     ),
   };
 }
@@ -87,7 +87,7 @@ async function findEnvGroupByName(token, user, name) {
 async function resolveEnvGroup(token, user, envGroupIdOrName) {
   if (!envGroupIdOrName) {
     die(
-      `You must provide a project id or name as the first argument to listEnvs`
+      `You must provide a project id or name as the first argument to listEnvs`,
     );
   }
 
@@ -119,7 +119,7 @@ async function listEnvGroup(token, user, args) {
   return {
     type: "table",
     data: [["id", "key", "value"]].concat(
-      envGroup.envVars.map((e) => [e.id, e.key, e.value])
+      envGroup.envVars.map((e) => [e.id, e.key, e.value]),
     ),
   };
 }

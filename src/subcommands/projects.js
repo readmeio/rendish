@@ -39,7 +39,7 @@ async function listProjects(token, user) {
   return {
     type: "table",
     data: [["name", "id", "# of environments"]].concat(
-      projects.map((p) => [p.name, p.id, p.environments.length.toString()])
+      projects.map((p) => [p.name, p.id, p.environments.length.toString()]),
     ),
   };
 }
@@ -68,7 +68,7 @@ async function findProjectIdByName(token, user, name) {
 async function listProjectEnvs(token, user, args) {
   if (!args[0]) {
     die(
-      `You must provide a project Id or name as the first argument to listEnvs`
+      `You must provide a project Id or name as the first argument to listEnvs`,
     );
   }
 
@@ -98,7 +98,7 @@ async function listProjectEnvs(token, user, args) {
         e.databases.length.toString(),
         e.redises.length.toString(),
         e.envGroups.length.toString(),
-      ])
+      ]),
     ),
   };
 }
