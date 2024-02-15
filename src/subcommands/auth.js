@@ -10,7 +10,7 @@ import minimist from "minimist";
 import promptSync from "prompt-sync";
 
 function usage() {
-  console.log(`Usage: rendish [<options>] [<command>] [args]
+  console.log(`Usage: rendish auth [<options>] [<command>] [args]
 
 ${color.yellow("auth")} subcommand
 
@@ -36,7 +36,7 @@ function saveToken(idToken, expiresAt, user) {
       idToken,
       expiresAt,
       user,
-    })
+    }),
   );
 }
 
@@ -45,7 +45,7 @@ export async function login() {
 
   // TODO: can we log people in via oauth?
   console.log(
-    "If you normally log in to render via oauth, you will need to go into account settings and add a password to your account\n"
+    "If you normally log in to render via oauth, you will need to go into account settings and add a password to your account\n",
   );
   const username = prompt("email: ");
   const password = prompt.hide("password: ");
