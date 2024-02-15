@@ -1,6 +1,6 @@
 {
   "name": "rendish",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An unofficial CLI for render.com",
   "license": "MIT",
   "author": "ReadMe <support@readme.io> (https://readme.com)",
@@ -22,6 +22,7 @@
   "dependencies": {
     "colors-cli": "^1.0.33",
     "minimist": "^1.2.8",
+    "open": "^10.0.3",
     "prompt-sync": "^4.2.0",
     "puppeteer": "^21.5.2",
     "table": "^6.8.1",
@@ -33,7 +34,6 @@
     "@types/prompt-sync": "^4.2.3",
     "@types/ws": "^8.5.10",
     "eslint": "^8.54.0",
-    "open": "^10.0.3",
     "typescript": "^5.3.3"
   }
 }
