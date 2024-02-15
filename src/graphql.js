@@ -186,13 +186,13 @@ export async function fetchTeams(token, user) {
 
 /**
  * @typedef {Object} ExternalImage
- * @property {string} imageHost
- * @property {string} imageName
+ * @property {string} imageHost?
+ * @property {string} imageName?
  * @property {string} imageRef
- * @property {string} imageRepository
- * @property {string} imageURL
- * @property {string} ownerId
- * @property {RegistryCredentialID} registryCredentialId
+ * @property {string} imageRepository?
+ * @property {string} imageURL?
+ * @property {string} ownerId?
+ * @property {RegistryCredentialID} registryCredentialId?
  * @property {string} __typename
  */
 
@@ -625,4 +625,149 @@ export async function serverBandwidth(token, serviceId) {
   });
 
   return body.data.server;
+}
+
+/**
+ * @typedef {`evt-${string}`} EventID
+ */
+
+/**
+ * @typedef {`dep-${string}`} DeployID
+ */
+
+/**
+ * @typedef {Object} Deploy
+ * @property {DeployID} id
+ * @property {number} status
+ * @property {string} commitShortId
+ * @property {string} commitMessage
+ * @property {string} commitURL
+ * @property {string} rollbackSupportStatus // ROLLBACK_UNSUPPORTED_DEPLOY_LIVE, ROLLBACK_UNSUPPORTED_DEPLOY_DID_NOT_FINISH, what else?
+ * @property {string} imageSHA
+ * @property {ExternalImage} externalImage
+ * @property {"Deploy"} __typename
+ */
+
+/**
+ * @typedef {Object} Trigger
+ * @property {boolean} firstBuild
+ * @property {boolean} clusterSynced
+ * @property {boolean} envUpdated
+ * @property {boolean} manual
+ * @property {boolean} clearCache
+ * @property {User} user
+ * @property {string} updatedProperty
+ * @property {string} newCommit
+ * @property {boolean} system
+ * @property {boolean} rollback
+ * @property {string} rollbackTargetDeployID
+ * @property {boolean} withApiKey
+ * @property {boolean} withDeployKey
+ * @property {"BuildDeployTrigger"} __typename
+ */
+
+/**
+ * @typedef {Object} DeployStarted
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {number} status // what does this represent?
+ * @property {DeployID} deployId
+ * @property {Deploy} deploy
+ * @property {"DeployStarted"} __typename
+ */
+
+/**
+ * @typedef {Object} DeployEnded
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {DeployID} deployId
+ * @property {Deploy} deploy
+ * @property {Trigger} trigger
+ * @property {"DeployEnded"} __typename
+ */
+
+/**
+ * @typedef {Object} AutoscalingStarted
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {number} fromInstances
+ * @property {Deploy} toInstances
+ * @property {"AutoscalingStarted"} __typename
+ */
+
+/**
+ * @typedef {Object} AutoscalingEnded
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {number} fromInstances
+ * @property {Deploy} toInstances
+ * @property {"AutoscalingEnded"} __typename
+ */
+
+/**
+ * @typedef {`crn-${string}`} CronJobRunID
+ */
+
+/**
+ * @typedef {Object} CronJobRunStarted
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {CronJobRunID} cronJobRunId
+ * @property {CronJobRun} cronJobRun
+ * @property {string} triggeredByUser
+ * @property {string} imageSHA
+ * @property {string} externalImage
+ * @property {"CronJobRunStarted"} __typename
+ */
+
+/**
+ * @typedef {Object} CronJobRunEnded
+ * @property {EventID} id
+ * @property {string} timestamp
+ * @property {CronJobRunID} cronJobRunId
+ * @property {CronJobRun} cronJobRun
+ * @property {number} status // what does this represent?
+ * @property {any} newRun? // TODO
+ * @property {any} reason?
+ * @property {User} user?
+ * @property {"CronJobRunStarted"} __typename
+ */
+
+/**
+ * @typedef {Object} CronJobRun
+ * @property {CronJobRunID} id
+ * @property {string} status // "pending"|"successful"|what else?
+ * @property {CronJobRun} __typename
+ */
+
+// XXX: what's the full list of available events? I think it's available in the
+// graphql there: buildEnded, buildStarted, cronJobRunEnded, etc etc. TODO:
+// fill in all these types
+
+/**
+ * @typedef {DeployStarted|DeployEnded|AutoscalingStarted|AutoscalingEnded|CronJobRunStarted|CronJobRunEnded} Event
+ */
+
+/**
+ * @typedef {Object} ServiceEventsResult
+ * @property {boolean} hasMore
+ * @property {Event[]} events
+ * @property {"ServiceEventsResult"} __typename
+ */
+
+/**
+ * Fetch events for a given service
+ *
+ * @param {string} token
+ * @param {ServerID} serviceId
+ * @returns Promise<ServiceEventsResult>
+ */
+export async function serviceEvents(token, serviceId, limit = 20) {
+  const body = await req(token, {
+    operationName: "serviceEvents",
+    variables: { serviceId: serviceId, limit: limit },
+    query:
+      "query serviceEvents($serviceId: String!, $before: Time, $limit: Int) {\n  serviceEvents(serviceId: $serviceId, before: $before, limit: $limit) {\n    hasMore\n    events {\n      ...allServiceEvents\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment allServiceEvents on ServiceEvent {\n  ...serviceEventFields\n  ...buildEndedFields\n  ...buildStartedFields\n  ...cronJobRunEndedFields\n  ...cronJobRunStartedFields\n  ...deployEndedFields\n  ...deployStartedFields\n  ...serverFailedFields\n  ...serverRestartedFields\n  ...suspenderAddedFields\n  ...suspenderRemovedFields\n  ...planChangedFields\n  ...extraInstancesChangedFields\n  ...branchDeletedFields\n  ...autoscalingConfigChangedFields\n  ...autoscalingStartedFields\n  ...autoscalingEndedFields\n  ...initialDeployHookStartedFields\n  ...initialDeployHookEndedFields\n  ...commitIgnoredFields\n  ...userServerUnhealthyFields\n  ...maintenanceStartedFields\n  ...maintenanceEndedFields\n  ...imagePullFailedFields\n  ...systemRedeployStartedFields\n  ...systemRedeployEndedFields\n  __typename\n}\n\nfragment failureReasonFields on FailureReason {\n  badStartCommand\n  evicted\n  evictionReason\n  nonZeroExit\n  oomKilled {\n    memoryLimit\n    __typename\n  }\n  rootDirMissing\n  timedOutSeconds\n  unhealthy\n  step\n  __typename\n}\n\nfragment serviceEventFields on ServiceEvent {\n  id\n  timestamp\n  __typename\n}\n\nfragment buildEndedFields on BuildEnded {\n  buildId\n  build {\n    id\n    commitShortId\n    commitMessage\n    commitURL\n    __typename\n  }\n  status\n  reason {\n    ...buildDeployEndReasonFields\n    __typename\n  }\n  __typename\n}\n\nfragment buildDeployEndReasonFields on BuildDeployEndReason {\n  buildFailed {\n    id\n    __typename\n  }\n  newBuild {\n    id\n    __typename\n  }\n  newDeploy {\n    id\n    __typename\n  }\n  failure {\n    ...failureReasonFields\n    __typename\n  }\n  timedOutSeconds\n  __typename\n}\n\nfragment buildStartedFields on BuildStarted {\n  buildId\n  build {\n    id\n    commitShortId\n    commitMessage\n    commitURL\n    __typename\n  }\n  trigger {\n    ...buildDeployTriggerFields\n    __typename\n  }\n  __typename\n}\n\nfragment buildDeployTriggerFields on BuildDeployTrigger {\n  firstBuild\n  clusterSynced\n  envUpdated\n  manual\n  clearCache\n  user {\n    id\n    email\n    __typename\n  }\n  updatedProperty\n  newCommit\n  system\n  rollback\n  rollbackTargetDeployID\n  withApiKey\n  withDeployKey\n  __typename\n}\n\nfragment cronJobRunEndedFields on CronJobRunEnded {\n  cronJobRunId\n  cronJobRun {\n    id\n    status\n    __typename\n  }\n  status\n  newRun {\n    id\n    __typename\n  }\n  reason {\n    ...failureReasonFields\n    __typename\n  }\n  user {\n    id\n    email\n    __typename\n  }\n  __typename\n}\n\nfragment serverRestartedFields on ServerRestarted {\n  triggeredByUser {\n    id\n    email\n    __typename\n  }\n  __typename\n}\n\nfragment cronJobRunStartedFields on CronJobRunStarted {\n  cronJobRunId\n  cronJobRun {\n    id\n    status\n    __typename\n  }\n  triggeredByUser {\n    id\n    email\n    __typename\n  }\n  imageSHA\n  externalImage {\n    imageRef\n    __typename\n  }\n  __typename\n}\n\nfragment deployEndedFields on DeployEnded {\n  deployId\n  deploy {\n    id\n    status\n    commitShortId\n    commitMessage\n    commitURL\n    rollbackSupportStatus\n    imageSHA\n    externalImage {\n      imageRef\n      __typename\n    }\n    __typename\n  }\n  status\n  reason {\n    ...buildDeployEndReasonFields\n    __typename\n  }\n  __typename\n}\n\nfragment deployStartedFields on DeployStarted {\n  deployId\n  deploy {\n    id\n    status\n    commitShortId\n    commitMessage\n    commitURL\n    rollbackSupportStatus\n    imageSHA\n    externalImage {\n      imageRef\n      __typename\n    }\n    __typename\n  }\n  trigger {\n    ...buildDeployTriggerFields\n    __typename\n  }\n  __typename\n}\n\nfragment serverFailedFields on ServerFailed {\n  reason {\n    ...failureReasonFields\n    __typename\n  }\n  __typename\n}\n\nfragment suspenderAddedFields on SuspenderAdded {\n  actor\n  suspendedByUser {\n    id\n    email\n    __typename\n  }\n  __typename\n}\n\nfragment suspenderRemovedFields on SuspenderRemoved {\n  actor\n  resumedByUser {\n    id\n    email\n    __typename\n  }\n  __typename\n}\n\nfragment planChangedFields on PlanChanged {\n  from\n  to\n  __typename\n}\n\nfragment extraInstancesChangedFields on ExtraInstancesChanged {\n  fromInstances\n  toInstances\n  __typename\n}\n\nfragment branchDeletedFields on BranchDeleted {\n  deletedBranch\n  newBranch\n  __typename\n}\n\nfragment autoscalingConfigChangedFields on AutoscalingConfigChanged {\n  config {\n    enabled\n    min\n    max\n    cpuPercentage\n    cpuEnabled\n    memoryPercentage\n    memoryEnabled\n    __typename\n  }\n  __typename\n}\n\nfragment autoscalingStartedFields on AutoscalingStarted {\n  fromInstances\n  toInstances\n  __typename\n}\n\nfragment autoscalingEndedFields on AutoscalingEnded {\n  fromInstances\n  toInstances\n  __typename\n}\n\nfragment initialDeployHookStartedFields on InitialDeployHookStarted {\n  deployId\n  service {\n    id\n    userFacingTypeSlug\n    __typename\n  }\n  __typename\n}\n\nfragment initialDeployHookEndedFields on InitialDeployHookEnded {\n  deployId\n  service {\n    id\n    userFacingTypeSlug\n    __typename\n  }\n  commandStatus: status\n  __typename\n}\n\nfragment commitIgnoredFields on CommitIgnored {\n  service {\n    id\n    __typename\n  }\n  commit\n  commitUrl\n  __typename\n}\n\nfragment userServerUnhealthyFields on UserServerUnhealthy {\n  service {\n    id\n    __typename\n  }\n  message\n  __typename\n}\n\nfragment maintenanceStartedFields on MaintenanceStarted {\n  service {\n    id\n    __typename\n  }\n  trigger {\n    ...maintenanceTriggerFields\n    __typename\n  }\n  __typename\n}\n\nfragment maintenanceTriggerFields on MaintenanceTrigger {\n  manual\n  system\n  user {\n    id\n    email\n    __typename\n  }\n  __typename\n}\n\nfragment maintenanceEndedFields on MaintenanceEnded {\n  service {\n    id\n    __typename\n  }\n  __typename\n}\n\nfragment imagePullFailedFields on ImagePullFailed {\n  imageURL\n  __typename\n}\n\nfragment systemRedeployStartedFields on SystemRedeployStarted {\n  service {\n    id\n    __typename\n  }\n  __typename\n}\n\nfragment systemRedeployEndedFields on SystemRedeployEnded {\n  service {\n    id\n    __typename\n  }\n  __typename\n}\n",
+  });
+  return body.data.serviceEvents;
 }
