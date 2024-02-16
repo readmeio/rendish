@@ -1,13 +1,6 @@
 # rendish
 
-An unofficial render API that uses their GraphQL API rather than their REST API.
-
-I've created a new tool instead of extending [render-cli](https://github.com/render-oss/render-cli) because:
-
-- Their REST API lacks coverage of all their facilities.
-    - it does not cover environment groups or projects, for example
-- Their tool seems to be abandoned
-- I wanted to use node instead of deno
+An unofficial render CLI that uses their GraphQL API rather than their REST API.
 
 ## Installing
 
@@ -21,6 +14,15 @@ If you currently only us an oauth login, you will need to go into the accounts p
 
 This tool assumes that you use 2fa to log in; enable 2fa if you haven't yet.
 
+## Why
+
+I've created a new tool instead of extending [render-cli](https://github.com/render-oss/render-cli) because:
+
+- Their REST API lacks coverage of all their facilities.
+    - it does not cover environment groups or projects, for example
+- Their tool seems to be abandoned
+- I wanted to use node instead of deno
+
 ## Commands
 
 The commands that this tool supports are in flux, and there are usage notes at the root (`rendish --help`) for each subcommand (for example, `rendish services --help`). Use the help text to explore the tool.
@@ -30,3 +32,4 @@ The commands that this tool supports are in flux, and there are usage notes at t
 - handle token expiration better
 - solidify the interface and document it
 - [this](https://github.com/ottdump/render-action/blob/211a79f048bced8fecf1fe0418036f9be54253cc/src/generated/sdk.ts) appears to be a generated graphQL sdk, I'm not sure what they generated it from? but maybe it's useful
+- documentation
