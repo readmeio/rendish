@@ -10,6 +10,7 @@ import { die } from "../ui.js";
 
 import color from "colors-cli/safe";
 import minimist from "minimist";
+import { minimatch } from "minimatch";
 
 /**
  * @typedef {import("../graphql.js").User} User
@@ -29,24 +30,51 @@ OPTIONS
 
 SUBCOMMANDS
 
-list                list all services
+list [<glob>]       list all services. Optionally, provide a glob pattern
 bandwidth <service> print bandwidth usage for a given service
 metrics <service>   print metrics for a given service
 ssh <service>       connect to <service> via ssh. Assumes you've added your ssh
                     key: https://docs.render.com/ssh-keys
+
+EXAMPLES
+
+List all services ending in -prod:
+
+    rendish services list '*-prod'
+
+Connect to the web-prod service by ssh:
+
+    rendish services ssh web-prod
+
+Plot CPU usage for the web-prod service with gnuplot for plotting and icat for
+displaying it in the terminal:
+
+  rendish services metrics readme-prod |
+   gnuplot -e '
+      set terminal pngcairo size 2048,768;
+      set datafile separator " ";
+      plot "<cat" using 0:($3/1000) notitle with lines' |
+   icat --align left
 `);
 }
 
 /**
  * @param {string} token
  * @param {User} user
+ * @param {string[]} args
  * @returns {Promise<DataWrapper>}
  */
-async function listServices(token, user) {
+async function listServices(token, user, args) {
   // for now, just assume that we want the first team. revisit
   const { id: teamID } = (await fetchTeams(token, user))[0];
 
-  const services = await fetchServices(token, teamID);
+  let services = await fetchServices(token, teamID);
+
+  if (args.length == 1) {
+    services = services.filter(
+      (s) => minimatch(s.name, args[0]) || minimatch(s.id, args[0]),
+    );
+  }
 
   return {
     type: "table",

@@ -12,3 +12,7 @@ dependencies:
 .PHONY: clean
 clean:
 	rm dist/*
+
+.PHONY: publish
+publish:
+	npm publish .
