@@ -20,9 +20,27 @@ OPTIONS
 
 SUBCOMMANDS
 
-list                list available projects
-listVars <envGroup> list variables in an environment group by group id or name
-services <envGroup> list services attached to the given env group
+list                           list available environment groups
+listVars <envGroup> [<filter>] list variables in an environment group by group
+                               id or name and filter by an optional filter
+services <envGroup> [<filter>] list services attached to the given env group
+                               and optionally filter them
+
+EXAMPLES
+
+List the environment variables in the staging environment group:
+
+  rendish listVars staging
+
+List the environment variables in the staging environment group that contain
+"GOOGLE" in the key or value:
+
+  rendish listVars staging GOOGLE
+
+List the services attached to the staging environment that have "queue" in the
+name:
+
+  rendish listVars services queue
 `);
 }
 
@@ -115,12 +133,17 @@ async function resolveEnvGroup(token, user, envGroupIdOrName) {
 async function listEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
   const envGroup = await fetchEnvGroup(token, envGroupId);
+  const filter = args[1];
+  let vars = envGroup.envVars.map((e) => [e.id, e.key, e.value]);
+  if (filter) {
+    vars = vars.filter(
+      ([, key, value]) => key.includes(filter) || value.includes(filter),
+    );
+  }
 
   return {
     type: "table",
-    data: [["id", "key", "value"]].concat(
-      envGroup.envVars.map((e) => [e.id, e.key, e.value]),
-    ),
+    data: [["id", "key", "value"]].concat(vars),
   };
 }
 
@@ -134,11 +157,18 @@ async function listEnvGroup(token, user, args) {
  */
 async function listServicesForEnvGroup(token, user, args) {
   const envGroupId = await resolveEnvGroup(token, user, args[0]);
-  const services = await fetchEnvGroupServices(token, envGroupId);
+  const serviceObjs = await fetchEnvGroupServices(token, envGroupId);
+  const filter = args[1];
+  let services = serviceObjs.map((s) => [s.name, s.id]);
+  if (filter) {
+    services = services.filter(
+      ([name, sid]) => name.includes(filter) || sid.includes(filter),
+    );
+  }
 
   return {
     type: "table",
-    data: [["name", "id"]].concat(services.map((s) => [s.name, s.id])),
+    data: [["name", "id"]].concat(services),
   };
 }
 
