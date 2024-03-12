@@ -33,8 +33,9 @@ SUBCOMMANDS
 list [<glob>]       list all services. Optionally, provide a glob pattern
 bandwidth <service> print bandwidth usage for a given service
 metrics <service>   print metrics for a given service
-ssh <service>       connect to <service> via ssh. Assumes you've added your ssh
-                    key: https://docs.render.com/ssh-keys
+ssh <service>       connect to <service> via ssh. Passes all further arguments
+                    to ssh, and assumes you've added your ssh key per:
+                    https://docs.render.com/ssh-keys
 
 EXAMPLES
 
@@ -45,6 +46,10 @@ List all services ending in -prod:
 Connect to the web-prod service by ssh:
 
     rendish services ssh web-prod
+
+List the contents of the \`/app\` directory on web-prod:
+
+    rendish services ssh web-prod ls /app
 
 Plot CPU usage for the web-prod service with gnuplot for plotting and icat for
 displaying it in the terminal:
